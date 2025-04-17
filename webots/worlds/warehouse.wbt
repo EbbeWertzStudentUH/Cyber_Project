@@ -2,7 +2,7 @@
 
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "../protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/school_furniture/protos/Clock.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/humans/pedestrian/protos/Pedestrian.proto"
 EXTERNPROTO "../protos/Shelf.proto"
@@ -16,8 +16,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.19386293740235383 -0.5623358978125226 -0.8038628611480414 5.472897153850229
-  position -32.90022165293009 -24.340509042583854 23.22719473780881
+  orientation -0.5328655683358597 0.5508456888428416 0.6423576209288377 1.9240898610019403
+  position -0.9834149516188466 -5.1384092970048245 30.916589208144362
 }
 TexturedBackground {
 }
@@ -31,6 +31,7 @@ RectangleArena {
   }
 }
 ConveyorBelt {
+  hidden translation_1 0 0 0.14990583955205156
   translation 4.93 9.5 0
   size 10 0.7 0.2
   borderHeight 0.05
@@ -39,8 +40,11 @@ PottedTree {
   translation 9.66 3.83 0
 }
 Door {
+  hidden translation_5 0.0017814088009271978 0.0002444099860215432 1.4432899320127035e-15
+  hidden rotation_5 0 0 -1 0.0016446476645962283
   translation 10.14 5.16 0
   rotation 0 0 1 3.14159
+  position -0.001644647664498763
 }
 StraightStairs {
   translation 9.35 6.1 -0.01
@@ -140,11 +144,244 @@ Shelf {
   name "shelf(16)"
 }
 Pedestrian {
-  translation -1.06042e-06 0 0.23
-  rotation 0 1 0 -1.5707953071795862
+  translation 9.15 5.01 1.26
+  rotation 0 -1 0 -5.307179586466759e-06
   name "Jef"
 }
 Clock {
   translation 9.99 3.97 2.25
   rotation 0 0 1 3.14159
+}
+Transform {
+  translation 0 -0.80 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 -3.30 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 -5.80 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 -8.30 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+
+Transform {
+  translation 0 8.6 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 0.1 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 16.9 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 3.50 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 1.35 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 3.50 0.01  # verplaats hier de lijn
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 18 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation -4 3.9 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 9.4 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation -1.5 3.9 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 9.4 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation -6.5 3.9 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 9.4 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation -9 3.9 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 9.4 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 3 3.9 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 9.4 0.05 0.01
+      }
+    }
+  ]
+}
+Transform {
+  translation 6 3.9 0.01  # verplaats hier de lijn
+  rotation 0 0 1 1.5708  # dit is 90° in radialen
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 1
+        }
+      }
+      geometry Box {
+        size 9.4 0.05 0.01
+      }
+    }
+  ]
 }
