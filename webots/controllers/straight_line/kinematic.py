@@ -7,11 +7,11 @@ class Point2D:
         self.theta = theta
 
 class Motion:
-    def __init__(self):
-        self.w1 = 0.0
-        self.w2 = 0.0
-        self.w3 = 0.0
-        self.w4 = 0.0
+    def __init__(self, w1=0.0, w2=0.0, w3=0.0, w4=0.0):
+        self.w1 = w1
+        self.w2 = w2
+        self.w3 = w3
+        self.w4 = w4
 
 class RobotKinematic:
     _instance = None
@@ -23,66 +23,41 @@ class RobotKinematic:
         return RobotKinematic._instance
 
     def __init__(self):
-        self.encData = [0.0] * 4
-        self.prevEnc = [0.0] * 4
-        self.Venc = [0.0] * 4
         self.pos = Point2D()
-        self.vel = Point2D()
+        self.r_wheel = 0.06  # m
+        self.L = 0.208       # m
+        self.a = math.radians(45)
+        self.dt = 0.032      # 32ms (Webots TIME_STEP)
+        self.last_motion = Motion()
 
-        self.a = 45  # hoek tussen wielen (graden)
-        self.L = 20.8  # afstand tot wiel (cm)
-        self.r_wheel = 6.0  # straal wiel (cm)
-        self.circumference = 2 * math.pi * self.r_wheel
+    def updateOdometry(self):
+        b = math.sqrt(2)
+        m = self.last_motion
 
-    def angleNormalize(self, angle):
-        if angle > math.pi:
-            angle -= 2 * math.pi
-        if angle < -math.pi:
-            angle += 2 * math.pi
-        return angle
+        # Wielsnelheden in m/s
+        v1 = m.w1 * self.r_wheel
+        v2 = m.w2 * self.r_wheel
+        v3 = m.w3 * self.r_wheel
+        v4 = m.w4 * self.r_wheel
 
-    def setInitialPositon(self, x, y, theta):
-        self.pos.x = x
-        self.pos.y = y
-        self.pos.theta = theta
+        # Kinematica
+        dx = ((-b * v1) - (b * v2) + (b * v3) + (b * v4)) / 4
+        dy = ((b * v1) - (b * v2) - (b * v3) + (b * v4)) / 4
+        dtheta = (v1 + v2 + v3 + v4) / (4 * self.L)
+
+        # Update globale positie
+        self.pos.x += math.cos(self.pos.theta) * dx * self.dt - math.sin(self.pos.theta) * dy * self.dt
+        self.pos.y += math.sin(self.pos.theta) * dx * self.dt + math.cos(self.pos.theta) * dy * self.dt
+        self.pos.theta += dtheta * self.dt
 
     def getPos(self):
         return self.pos
 
-    def ForwardKinematic(self, s1, s2, s3, s4):
-        b = math.sqrt(2)
-        out = Point2D()
-        out.x = ((-b * s1) - (b * s2) + (b * s3) + (b * s4)) / 4
-        out.y = ((b * s1) - (b * s2) - (b * s3) + (b * s4)) / 4
-        out.theta = (s1 + s2 + s3 + s4) / (4 * self.L)
-        return out
-
-    def CalculateOdometry(self, ori):
-        for i in range(4):
-            tick = self.encData[i] - self.prevEnc[i]
-            self.Venc[i] = tick * (self.circumference / (2 * math.pi))
-
-        output = self.ForwardKinematic(*self.Venc)
-
-        angleNorm = self.angleNormalize(self.pos.theta)
-        self.pos.theta = angleNorm
-
-        # Gebruik IMU-oriëntatie voor berekening
-        velGlobal_x = math.cos(ori) * output.x - math.sin(ori) * output.y
-        velGlobal_y = math.cos(ori) * output.y + math.sin(ori) * output.x
-
-        self.pos.x += velGlobal_x / 100  # cm → m
-        self.pos.y += velGlobal_y / 100
-        self.pos.theta = ori
-
-        self.prevEnc = list(self.encData)
-
-    def inversKinematic(self, vx, vy, omega, ori):
+    def inversKinematic(self, vx, vy, omega):
         output = Motion()
-        a_rad = math.radians(self.a)
-
-        output.w1 = (-math.cos(a_rad) * vx + math.sin(a_rad) * vy + self.L * omega) / self.r_wheel
-        output.w2 = (-math.cos(a_rad) * vx - math.sin(a_rad) * vy + self.L * omega) / self.r_wheel
-        output.w3 = ( math.cos(a_rad) * vx - math.sin(a_rad) * vy + self.L * omega) / self.r_wheel
-        output.w4 = ( math.cos(a_rad) * vx + math.sin(a_rad) * vy + self.L * omega) / self.r_wheel
+        output.w1 = (-math.cos(self.a) * vx + math.sin(self.a) * vy + self.L * omega) / self.r_wheel
+        output.w2 = (-math.cos(self.a) * vx - math.sin(self.a) * vy + self.L * omega) / self.r_wheel
+        output.w3 = ( math.cos(self.a) * vx - math.sin(self.a) * vy + self.L * omega) / self.r_wheel
+        output.w4 = ( math.cos(self.a) * vx + math.sin(self.a) * vy + self.L * omega) / self.r_wheel
+        self.last_motion = output
         return output
