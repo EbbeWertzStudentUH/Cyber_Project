@@ -12,12 +12,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/plants/protos/PottedTree.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/conveyors/protos/ConveyorBelt.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/BrushedAluminium.proto"
+EXTERNPROTO "../protos/OmniBot.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.5328655683358597 0.5508456888428416 0.6423576209288377 1.9240898610019403
-  position -0.9834149516188466 -5.1384092970048245 30.916589208144362
+  orientation -0.2604068589009002 -0.11509244017108493 0.9586146243683287 3.8536976883733014
+  position 4.6220643865526965 3.8901061017482945 2.6482234003091603
 }
 TexturedBackground {
 }
@@ -31,7 +32,7 @@ RectangleArena {
   }
 }
 ConveyorBelt {
-  hidden translation_1 0 0 0.14990583955205156
+  hidden translation_1 0 0 0.1498901435520516
   translation 4.93 9.5 0
   size 10 0.7 0.2
   borderHeight 0.05
@@ -40,11 +41,11 @@ PottedTree {
   translation 9.66 3.83 0
 }
 Door {
-  hidden translation_5 0.0017814088009271978 0.0002444099860215432 1.4432899320127035e-15
-  hidden rotation_5 0 0 -1 0.0016446476645962283
+  hidden translation_5 0.0018524847715297443 0.00026657123306045305 1.7763568394002505e-15
+  hidden rotation_5 0 0 -1 0.0017942008456772068
   translation 10.14 5.16 0
   rotation 0 0 1 3.14159
-  position -0.001644647664498763
+  position -0.0017942008456285098
 }
 StraightStairs {
   translation 9.35 6.1 -0.01
@@ -152,8 +153,8 @@ Clock {
   translation 9.99 3.97 2.25
   rotation 0 0 1 3.14159
 }
-Transform {
-  translation 0 -0.80 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 -0.8 0.00
   children [
     Shape {
       appearance Appearance {
@@ -167,8 +168,8 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 -3.30 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 -3.3 0.00
   children [
     Shape {
       appearance Appearance {
@@ -182,8 +183,8 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 -5.80 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 -5.8 0.00
   children [
     Shape {
       appearance Appearance {
@@ -197,8 +198,8 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 -8.30 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 -8.3 0.00
   children [
     Shape {
       appearance Appearance {
@@ -212,9 +213,8 @@ Transform {
     }
   ]
 }
-
-Transform {
-  translation 0 8.6 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 8.6 0.00
   children [
     Shape {
       appearance Appearance {
@@ -228,9 +228,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 0.1 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation 0 0.1 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -244,8 +244,8 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 3.50 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 3.5 0.00
   children [
     Shape {
       appearance Appearance {
@@ -259,8 +259,8 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 1.35 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 1.35 0.00
   children [
     Shape {
       appearance Appearance {
@@ -274,8 +274,8 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 0 3.50 0.01  # verplaats hier de lijn
+Pose {
+  translation 0 3.5 0.00
   children [
     Shape {
       appearance Appearance {
@@ -289,9 +289,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation -4 3.9 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation -4 3.9 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -305,9 +305,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation -1.5 3.9 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation -1.5 3.9 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -321,9 +321,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation -6.5 3.9 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation -6.5 3.9 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -337,9 +337,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation -9 3.9 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation -9 3.9 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -353,9 +353,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 3 3.9 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation 3 3.9 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -369,9 +369,9 @@ Transform {
     }
   ]
 }
-Transform {
-  translation 6 3.9 0.01  # verplaats hier de lijn
-  rotation 0 0 1 1.5708  # dit is 90° in radialen
+Pose {
+  translation 6 3.9 0.00
+  rotation 0 0 1 1.5708
   children [
     Shape {
       appearance Appearance {
@@ -384,4 +384,7 @@ Transform {
       }
     }
   ]
+}
+OmniBot {
+  controller "straight_line"
 }
