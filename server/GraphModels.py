@@ -25,4 +25,22 @@ class PathGraph:
 
 @dataclass
 class ShelveStop:
-    pass
+    edge: PathEdge
+    shelve_id: str
+    node_1_distance: float
+
+    def coordinate(self):
+        x = self.edge.node1.x + (self.edge.node2.x - self.edge.node1.x) * self.node_1_distance
+        y = self.edge.node1.y + (self.edge.node2.y - self.edge.node1.y) * self.node_1_distance
+        return x, y
+
+    @classmethod
+    def from_coordinates(cls, x:float, y:float, edge:PathEdge, shelve_id:str):
+        x1, y1 = edge.node1.x, edge.node1.y
+        x2, y2 = edge.node2.x, edge.node2.y
+
+        length_squared = (x2 - x1) ** 2 + (y2 - y1) ** 2
+        t = ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / length_squared
+
+        return cls(edge=edge, shelve_id=shelve_id, node_1_distance=t)
+

@@ -1,8 +1,10 @@
 from typing import List
 
-from GraphModels import PathNode, PathGraph, PathEdge
+from matplotlib import lines
+
+from GraphModels import PathNode, PathGraph, PathEdge, ShelveStop
 from WarehouseModel import WarehouseModel
-from svg.SvgModels import SvgLineSegment, SvgCircle, SvgRgbMatch
+from svg.SvgModels import SvgLineSegment, SvgCircle, SvgRgbMatch, SvgText, SvgRectangle
 from svg.SvgExtractor import SVGExtractor
 
 
@@ -15,10 +17,12 @@ class SvgToModelBuilder:
         self.shelve_stop_color = SvgRgbMatch(r=100, g=100, b=-80)
         self.extractor = SVGExtractor(svg_file)
         self.graph = PathGraph()
+        self.shelve_stops = []
 
     def build(self):
         self._build_graph()
-        return WarehouseModel(self.graph)
+        self._build_shelve_stops()
+        return WarehouseModel(self.graph, self.shelve_stops)
 
     def _build_shelve_stops(self):
         """Builds ShelveStops from the yellow items and text boxes in the svg"""
@@ -28,12 +32,17 @@ class SvgToModelBuilder:
         white_squares = self.extractor.extract_rectangles(self.textbox_color)
         text_boxes = self.extractor.extract_text_elements()
 
+        for circle in shelve_circles:
+            path_edge = self._get_intersecting_edge(circle, self.graph.edges.values())
+            shelve_line = self._get_intersecting_line(circle, shelve_lines)
+            text = self._get_textbox(shelve_line, text_boxes, white_squares)
+            shelve_stop = ShelveStop.from_coordinates(circle.cx, circle.cy, path_edge, text.text)
+            self.shelve_stops.append(shelve_stop)
+
     def _build_graph(self):
         """Builds a PathGraph from the blue paths in the svg"""
-        # extract the blue elements
         path_lines = self.extractor.extract_lines(self.drivable_path_color)
         path_circles = self.extractor.extract_circles(self.drivable_path_color)
-
         circle_to_node_id = dict[SvgCircle,int]()  # key:Circle -> value:node id
 
         # add nodes
@@ -61,6 +70,42 @@ class SvgToModelBuilder:
             if self._line_intersects_circle(line, circle):
                 intersecting_circles.append(circle)
         return intersecting_circles
+
+    def _get_intersecting_line(self, circle: SvgCircle, lines: List[SvgLineSegment]):
+        for line in lines:
+            if self._line_intersects_circle(line, circle):
+                return line
+        return None
+
+    def _get_intersecting_edge(self, circle: SvgCircle, edges: list[PathEdge]):
+        for edge in edges:
+            node1, node2 = edge.node1, edge.node2
+            x1, y1 = node1.x, node1.y
+            x2, y2 = node2.x, node2.y
+            if self._line_intersects_circle(SvgLineSegment((x1, y1), (x2, y2)), circle):
+                return edge
+        return None
+
+    def _get_textbox(self, line: SvgLineSegment, texts:list[SvgText], textboxes:list[SvgRectangle]):
+        for box in textboxes:
+            if not self._line_ends_in_rectangle(line, box):
+                continue
+            for text in texts:
+                bx1, by1, bx2, by2 = box.x, box.y, box.x + box.width, box.y + box.height
+                if self._coordinate_is_in_bounding_box(text.x, text.y, bx1, by1, bx2, by2):
+                    return text
+
+    def _line_ends_in_rectangle(self, line: SvgLineSegment, rect: SvgRectangle):
+        x1, y1 = line.start
+        x2, y2 = line.end
+        start_is_in = self._coordinate_is_in_bounding_box(x1, y1, rect.x, rect.y, rect.x + rect.width, rect.y + rect.height)
+        end_is_in = self._coordinate_is_in_bounding_box(x2, y2, rect.x, rect.y, rect.x + rect.width, rect.y + rect.height)
+        return start_is_in or end_is_in
+
+    def _coordinate_is_in_bounding_box(self, x, y, box_x1, box_y1, box_x2, box_y2):
+        horizontal = min(box_x1, box_x2) < x < max(box_x1, box_x2)
+        vertical = min(box_y1, box_y2) < y < max(box_y1, box_y2)
+        return horizontal and vertical
 
     def _line_intersects_circle(self, line: SvgLineSegment, circle: SvgCircle) -> bool:
         """Check if the line intersects with the given circle."""

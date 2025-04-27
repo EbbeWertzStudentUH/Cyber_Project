@@ -24,26 +24,37 @@ class ModelExporter:
         new_root = ET.Element('svg', svg_attrib)
 
         for path_node in self.model.graph.nodes.values():
-            circle_attrib = {
-                'cx': str(path_node.x),
-                'cy': str(path_node.y),
-                'r': "0.2",
-                'style': "fill:blue; stroke:none;"
-            }
-            ET.SubElement(new_root, 'circle', circle_attrib)
+            self.create_circle(path_node.x, path_node.y, 'blue', new_root)
 
-        # Step 2: Draw edges (lines) between the circles
         for path_edge in self.model.graph.edges.values():
             path_node1 = path_edge.node1
             path_node2 = path_edge.node2
+            self.create_line(path_node1.x, path_node1.y, path_node2.x, path_node2.y, new_root)
 
-            d = f"M {path_node1.x} {path_node1.y} L {path_node2.x} {path_node2.y}"
+        for shelve_stop in self.model.shelve_stops:
+            x, y = shelve_stop.coordinate()
+            self.create_circle(x, y, 'yellow', new_root)
 
-            path_attrib = {
-                'd': d,
-                'style': f"stroke:rgb({random.randint(0, 255)},{random.randint(0, 255)},{random.randint(0, 255)}); stroke-width:0.1; fill:none;"
-            }
-            ET.SubElement(new_root, 'path', path_attrib)
 
         tree = ET.ElementTree(new_root)
         tree.write(self.output_file, encoding="utf-8", xml_declaration=True)
+
+    @staticmethod
+    def create_circle(x, y, color, root):
+        circle_attrib = {
+            'cx': str(x),
+            'cy': str(y),
+            'r': "0.2",
+            'style': f"fill:{color}; stroke:none;"
+        }
+        ET.SubElement(root, 'circle', circle_attrib)
+
+    @staticmethod
+    def create_line(x1, y1, x2, y2, root):
+        d = f"M {x1} {y1} L {x2} {y2}"
+
+        path_attrib = {
+            'd': d,
+            'style': f"stroke:rgb({random.randint(0, 255)},{random.randint(0, 255)},{random.randint(0, 255)}); stroke-width:0.1; fill:none;"
+        }
+        ET.SubElement(root, 'path', path_attrib)

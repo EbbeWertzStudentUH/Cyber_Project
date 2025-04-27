@@ -76,17 +76,24 @@ class SVGExtractor:
 
         for elem in self.root.iter():
             if elem.tag.endswith('text'):
-                # Extract the text content
-                text_content = elem.text.strip() if elem.text else ""
+                # Initialize text content
+                text_content = ""
+
+                # Check direct text
+                if elem.text and elem.text.strip():
+                    text_content += elem.text.strip()
+
+                # Check tspans inside text
+                for tspan in elem.findall('.//{http://www.w3.org/2000/svg}tspan'):
+                    if tspan.text and tspan.text.strip():
+                        text_content += tspan.text.strip()
 
                 # Extract the bounding box attributes (x, y, width, height)
                 x = float(elem.attrib.get('x', 0))
                 y = float(elem.attrib.get('y', 0))
-                width = float(elem.attrib.get('width', 0))
-                height = float(elem.attrib.get('height', 0))
 
                 # Create a TextElement instance
-                text_element = SvgText(text=text_content, x=x, y=y, width=width, height=height)
+                text_element = SvgText(text=text_content, x=x, y=y)
                 text_elements.append(text_element)
 
         return text_elements
