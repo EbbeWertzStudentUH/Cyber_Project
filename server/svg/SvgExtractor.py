@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from svg.SvgModels import SvgMetaData, SvgRgbMatch, SvgLineSegment, SvgCircle, SvgRectangle
+from svg.SvgModels import SvgMetaData, SvgRgbMatch, SvgLineSegment, SvgCircle, SvgRectangle, SvgText
 
 
 class SVGExtractor:
@@ -69,6 +69,27 @@ class SVGExtractor:
                     cy = float(elem.attrib.get('cy', '0'))
                     circles.append(SvgCircle(cx=cx, cy=cy))
         return circles
+
+    def extract_text_elements(self):
+        """Extract all text elements along with their bounding boxes."""
+        text_elements = []
+
+        for elem in self.root.iter():
+            if elem.tag.endswith('text'):
+                # Extract the text content
+                text_content = elem.text.strip() if elem.text else ""
+
+                # Extract the bounding box attributes (x, y, width, height)
+                x = float(elem.attrib.get('x', 0))
+                y = float(elem.attrib.get('y', 0))
+                width = float(elem.attrib.get('width', 0))
+                height = float(elem.attrib.get('height', 0))
+
+                # Create a TextElement instance
+                text_element = SvgText(text=text_content, x=x, y=y, width=width, height=height)
+                text_elements.append(text_element)
+
+        return text_elements
 
     def extract_rectangles(self, fill:SvgRgbMatch):
         """Extract all blue fill rectangles."""

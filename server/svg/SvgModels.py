@@ -28,3 +28,11 @@ class SvgMetaData:
     width: str
     height: str
     viewBox: str
+
+@dataclass
+class SvgText:
+    text: str
+    x: float
+    y: float
+    width: float
+    height: float
