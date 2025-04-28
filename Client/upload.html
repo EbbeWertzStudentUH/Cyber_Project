@@ -98,7 +98,7 @@
       const data = {};
 
       inputs.forEach((input, index) => {
-        data[`Queuslot_${index}`] = input.value;
+        data[index] = input.value;
       });
 
       console.log(data)

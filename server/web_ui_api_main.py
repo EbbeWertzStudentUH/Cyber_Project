@@ -40,6 +40,10 @@ async def submit_queue(request: Request):
     try:
         data = await request.json()  # Receive plain JSON directly
 
+        model = MODEL_SINGLETON.model
+        for key, value in data.items():
+            model.set_new_robot(value, int(key))
+
         print("Received queue data:", data)
 
     except Exception as e:
