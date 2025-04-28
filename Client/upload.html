@@ -41,7 +41,6 @@
         });
 
         if (response.ok) {
-          alert("bolle ma")
           const queueResponse = await fetch('http://127.0.0.1:8080/api/queu_lengt');
           if (queueResponse.ok) {
             const data = await queueResponse.json();
@@ -104,25 +103,28 @@
       console.log(data)
 
       try {
-        const response = await fetch('http://127.0.0.1:8080/api/submit_queue', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
-      
-        if (response.ok) {
-          alert("Queue submitted successfully!");
-        } else {
-          alert("Failed to submit queue.");
-        }
+        postQueue(data)
       } catch (error) {
         console.error(error);
         alert("An error occurred while submitting the queue.");
       }
-  }
 
+    async function postQueue(data) {
+      const response = await fetch('http://127.0.0.1:8080/api/submit_queue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+    
+      if (response.ok) {
+        alert("Queue submitted successfully!");
+      } else {
+        alert("Failed to submit queue.");
+      }
+    }
+  } 
   </script>
 </body>
 </html>
