@@ -12,12 +12,12 @@
   </div>
 
   <br>
-  <a href="/upload.html">Upload another SVG</a>
+  <a href="http://127.0.0.1:5500/Client/upload.html">Upload another SVG</a>
 
   <script>
     async function loadSVG() {
       try {
-        const response = await fetch('/api/svg');
+        const response = await fetch('http://127.0.0.1:8080/api/svg');
         if (!response.ok) {
           document.getElementById('svgContainer').textContent = "Failed to load SVG.";
           return;

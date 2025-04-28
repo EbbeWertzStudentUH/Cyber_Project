@@ -8,9 +8,11 @@
   <h1>Upload an SVG</h1>
   
   <form id="uploadForm">
-    <input type="file" id="fileInput" accept=".svg" required />
+    <input type="file" name="file" id="fileInput" accept=".svg" required />
     <button type="submit">Upload</button>
   </form>
+
+  <a href="http://127.0.0.1:5500/Client/main.html">After upload click</a>
 
   <p id="status"></p>
 
@@ -30,19 +32,17 @@
       }
 
       const formData = new FormData();
-      formData.append('svg', file);
+      formData.append('file', file);
 
       try {
-        const response = await fetch('/api/upload', {
+        const response = await fetch('http://127.0.0.1:8080/api/upload', {
           method: 'POST',
           body: formData
         });
 
         if (response.ok) {
-          status.textContent = "Upload successful!";
-          setTimeout(() => {
-            window.location.href = '/main.html'; // Redirect to main page
-          }, 1000);
+          alert("Upload successful");
+          window.location.href = 'http://127.0.0.1:5500/Client/main.html';
         } else {
           status.textContent = "Upload failed.";
         }
