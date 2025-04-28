@@ -1,4 +1,4 @@
-from GraphModels import PathGraph, ShelveStop, QueueLine, Robot
+from GraphModels import PathGraph, ShelveStop, QueueLine, Robot, ModelElementType
 
 
 class WarehouseModel:
@@ -13,7 +13,7 @@ class WarehouseModel:
 
     def set_new_robot(self, robot_id:str, queue_index:int):
         queue_node = self.queue_line.queue_nodes[queue_index]
-        robot = Robot(robot_id, queue_node, None, False, False)
+        robot = Robot(robot_id, ModelElementType.QUEUE_STOP, None, queue_node, None, False, False)
         self.robots[robot_id] = robot
 
 class ModelSingleTon:

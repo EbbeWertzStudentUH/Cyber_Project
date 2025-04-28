@@ -67,7 +67,7 @@ class QueueLine:
     connected_enter_node_id: int
     connected_leave_node_id: int
 
-ModelElement = Union[PathNode,PathEdge,ShelveStop,QueueLine,]
+ModelElement = Union[PathNode,PathEdge,ShelveStop,QueueLine,QueueNode]
 
 @dataclass
 class Robot:
