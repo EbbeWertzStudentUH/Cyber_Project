@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
@@ -30,6 +30,21 @@ async def upload_svg(file: UploadFile = File(...)):
 
     return {"message": "SVG uploaded and processed successfully"}
 
+@app.get("/api/queu_lengt")
+async def get_q_lenght():
+    q = MODEL_SINGLETON.model.get_queue_size()
+    return {"q": q}
+
+@app.post("/api/submit_queue")
+async def submit_queue(request: Request):
+    try:
+        data = await request.json()  # Receive plain JSON directly
+
+        print("Received queue data:", data)
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON data: {str(e)}")
+
 @app.get("/api/svg")
 async def get_svg():
 
@@ -38,6 +53,7 @@ async def get_svg():
 
     svg_content = MODEL_SINGLETON.original_svg
     return Response(content=svg_content, media_type="image/svg+xml")
+
 
 if __name__ == "__main__":
     import uvicorn

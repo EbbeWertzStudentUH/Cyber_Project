@@ -41,7 +41,18 @@
         });
 
         if (response.ok) {
-          alert("Upload successful");
+          alert("bolle ma")
+          const queueResponse = await fetch('http://127.0.0.1:8080/api/queu_lengt');
+          if (queueResponse.ok) {
+            const data = await queueResponse.json();
+            status.textContent = `Upload successful. Queue size: ${data.q}`;
+
+            // Create input fields based on q
+            createInputFields(data.q);
+
+          } else {
+            status.textContent = "Upload successful, but failed to fetch queue size.";
+          }
         } else {
           status.textContent = "Upload failed.";
         }
@@ -50,6 +61,68 @@
         status.textContent = "An error occurred.";
       }
     });
+
+    function createInputFields(q) {
+      // First remove old inputs if any
+      const oldInputs = document.getElementById('inputsContainer');
+      if (oldInputs) {
+        oldInputs.remove();
+      }
+
+      const container = document.createElement('div');
+      container.id = 'inputsContainer';
+
+      for (let i = 0; i < q; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = `Queuslot_${i}`;
+        input.placeholder = `Queuslot ${i}`;
+        container.appendChild(input);
+        container.appendChild(document.createElement('br'));
+      }
+      
+      const submitButton = document.createElement('button');
+      submitButton.type = 'submit';
+      submitButton.textContent = 'Submit Queue';
+      submitButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        submitQueueData(q);
+      });
+
+      container.appendChild(submitButton);
+      document.body.appendChild(container);
+    }
+
+    async function submitQueueData(q) {
+      const inputs = document.querySelectorAll('input[type="text"]');
+      const data = {};
+
+      inputs.forEach((input, index) => {
+        data[`Queuslot_${index}`] = input.value;
+      });
+
+      console.log(data)
+
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/submit_queue', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+      
+        if (response.ok) {
+          alert("Queue submitted successfully!");
+        } else {
+          alert("Failed to submit queue.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("An error occurred while submitting the queue.");
+      }
+  }
+
   </script>
 </body>
 </html>
