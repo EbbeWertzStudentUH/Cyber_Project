@@ -945,12 +945,13 @@ DEF OMNI_WHEELS_4 Robot {
       }
     }
     Camera {
-      translation 0 0 0.4
-      rotation 0 1 0 1.5708
+      translation 0 0 -0.01        # Camera hangt 0.4 meter boven de grond
+      rotation 0 1 0 1.57      # Rotatie van 90 graden rond de X-as om naar beneden te kijken
       fieldOfView 3.14
       width 640
       height 640
       projection "spherical"
+      name "color_sensor"
     }
     DEF BODY_TRANS Pose {
       translation 0 0 0.04
