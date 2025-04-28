@@ -21,54 +21,48 @@ def set_wheel_speeds(vx, vy, omega, kinematic):
     for i in range(4):
         wheels[i].setVelocity(wheel_speeds[i])
 
-# Beweging instellen
-vx = 0.2  # m/s
-vy = 0.0
-omega = 0.0
+def rijdt(richting_rad, afstand):
+    snelheid = 0.2  # constante snelheid (m/s)
+    vx = snelheid * math.cos(richting_rad)
+    vy = snelheid * math.sin(richting_rad)
+    omega = 0.0
 
-# Start de wielen met de gewenste snelheid
-set_wheel_speeds(vx, vy, omega, kinematic)
+    # Bepaal startpositie - MAAR maak een kopie!
+    pos = kinematic.getPos()
+    initial_pos = type(pos)(pos.x, pos.y, pos.theta)
 
-# Functie om de robot een bepaalde afstand te laten rijden
-def move_distance(target_distance, kinematic, tolerance=0.01):
-    initial_pos = kinematic.getPos()
-    target_x = initial_pos.x + target_distance
+    target_x = initial_pos.x + afstand * math.cos(richting_rad)
+    target_y = initial_pos.y + afstand * math.sin(richting_rad)
     
-    while abs(initial_pos.x - target_x) > tolerance:
-        kinematic.updateOdometry()
-        set_wheel_speeds(vx, vy, omega, kinematic)  # Start de wielen
-        robot.step(TIME_STEP)
-        initial_pos = kinematic.getPos()  # Herbereken de positie
+    tolerance = 0.01  # 1 cm tolerantie
 
-    # Stop de motoren na het bereiken van de afstand
+    while True:
+        robot.step(TIME_STEP)
+        kinematic.updateOdometry()
+        current_pos = kinematic.getPos()
+
+        dx = current_pos.x - initial_pos.x
+        dy = current_pos.y - initial_pos.y
+        distance_travelled = math.sqrt(dx**2 + dy**2)
+
+        print(f"current_pos: {current_pos.x:.3f}, {current_pos.y:.3f}")
+        print(f"initial_pos: {initial_pos.x:.3f}, {initial_pos.y:.3f}")
+        print(f"distance_travelled: {distance_travelled:.3f}")
+
+        if distance_travelled >= afstand - tolerance:
+            break
+
+        set_wheel_speeds(vx, vy, omega, kinematic)
+
+    # Stop de motoren
     for i in range(4):
         wheels[i].setVelocity(0.0)
 
-# Functie om de robot naar een bepaalde hoek te draaien
-def turn_to_angle(current_angle, target_angle, kinematic, max_speed=1.0, tolerance=0.01):
-    angle_diff = target_angle - current_angle
-    while abs(angle_diff) > tolerance:
-        if angle_diff > math.pi:
-            angle_diff -= 2 * math.pi
-        elif angle_diff < -math.pi:
-            angle_diff += 2 * math.pi
+# --- Gebruik ---
+rijdt(0, 1.0)            # 1 meter vooruit
+rijdt(math.pi/2, 1.0)    # 1 meter naar links
+rijdt(-math.pi/4, 1.0)   # 1 meter diagonaal rechtsvoor
 
-        # Bereken omega op basis van het verschil in hoeken
-        omega = max_speed if angle_diff > 0 else -max_speed
-
-        set_wheel_speeds(0.0, 0.0, omega, kinematic)  # Start de wielen voor draaien
-        robot.step(TIME_STEP)
-        current_angle += omega * (TIME_STEP / 1000.0)
-        angle_diff = target_angle - current_angle
-
-# Main loop: Beweeg de robot en draai naar een doelhoek
-move_distance(1.0, kinematic)  # Beweeg 1 meter vooruit
-turn_to_angle(0.0, math.pi / 2, kinematic)  # Draai naar 90 graden
-move_distance(1.0, kinematic)  # Beweeg nogmaals 1 meter vooruit
-
-# Stop de robot door snelheden op 0 te zetten
-for i in range(4):
-    wheels[i].setVelocity(0.0)
-
+# Blijf leven zonder iets te doen
 while robot.step(TIME_STEP) != -1:
     pass
