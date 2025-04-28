@@ -66,7 +66,7 @@ class SvgToModelBuilder:
             leave_x, leave_y = red_line.end
 
         node_disntances = [self._distance(leave_x, leave_y, c.cx, c.cy) for c in [red_circle] + green_circles]
-        queue_nodes = [QueueNode(distance_from_leave=dist) for dist in sorted(node_disntances, reverse=True)]
+        queue_nodes = [QueueNode(distance_from_leave=dist, index=i) for i, dist in enumerate(sorted(node_disntances))]
         enter_coordinate = (green_circles[0].cx, green_circles[0].cy)
         leave_coordinate = (red_circle.cx, red_circle.cy)
         self.queue_line = QueueLine(enter_coordinate, leave_coordinate, queue_nodes, self.queue_enter_connected_node, self.queue_leave_connected_node)

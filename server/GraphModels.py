@@ -1,4 +1,14 @@
 from dataclasses import dataclass
+from enum import Enum, auto
+from typing import Union
+
+
+class ModelElementType(Enum):
+    DRIVABLE_NODE = auto()
+    DRIVABLE_EDGE = auto()
+    SHELVE_STOP = auto()
+    QUEUE_LINE = auto()
+    QUEUE_STOP = auto()
 
 @dataclass
 class PathNode:
@@ -46,12 +56,25 @@ class ShelveStop:
 
 @dataclass
 class QueueNode:
+    index: int # leave node = 0
     distance_from_leave: float
 
 @dataclass
 class QueueLine:
     enter_coordinate: tuple[float, float]
     leave_coordinate: tuple[float, float]
-    queue_nodes: list[QueueNode] # is sorted from enter to leave
+    queue_nodes: list[QueueNode] # is sorted from leave to enter
     connected_enter_node_id: int
     connected_leave_node_id: int
+
+ModelElement = Union[PathNode,PathEdge,ShelveStop,QueueLine,]
+
+@dataclass
+class Robot:
+    id:str
+    current_element_type: ModelElementType
+    target_element_type: ModelElementType | None
+    current_element: ModelElement
+    target_element: ModelElement | None
+    is_idle: bool
+    has_package: bool
