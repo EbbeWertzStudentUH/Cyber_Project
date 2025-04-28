@@ -1,9 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Upload SVG</title>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <title>Upload SVG Dashboard</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f6f8;
+        color: #333;
+      }
+  
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      }
+  
+      h1 {
+        text-align: center;
+        color: #4A90E2;
+        margin-bottom: 20px;
+      }
+  
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+  
+      input[type="file"] {
+        padding: 10px;
+        border: 2px dashed #4A90E2;
+        background: #f0f8ff;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+  
+      button {
+        background-color: #4A90E2;
+        color: #fff;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+  
+      button:hover {
+        background-color: #357ABD;
+      }
+  
+      #status {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #28a745;
+      }
+  
+      #inputsContainer {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+  
+      #inputsContainer input[type="text"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+  
+      a {
+        display: block;
+        margin-top: 20px;
+        text-align: center;
+        color: #4A90E2;
+        text-decoration: none;
+        font-weight: bold;
+      }
+  
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
 <body>
   <h1>Upload an SVG</h1>
   

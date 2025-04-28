@@ -1,9 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>View SVG</title>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <title>View SVG Dashboard</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f6f8;
+        color: #333;
+      }
+  
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        text-align: center;
+      }
+  
+      h1 {
+        color: #4A90E2;
+        margin-bottom: 20px;
+      }
+  
+      #svgContainer {
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f0f8ff;
+        border: 2px dashed #4A90E2;
+        border-radius: 8px;
+        padding: 20px;
+        overflow: auto;
+      }
+  
+      a {
+        display: inline-block;
+        margin-top: 30px;
+        background-color: #4A90E2;
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background 0.3s;
+      }
+  
+      a:hover {
+        background-color: #357ABD;
+      }
+    </style>
+  </head>
 <body>
   <h1>Uploaded SVG</h1>
 
