@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload SVG</title>
+</head>
+<body>
+  <h1>Upload an SVG</h1>
+  
+  <form id="uploadForm">
+    <input type="file" name="file" id="fileInput" accept=".svg" required />
+    <button type="submit">Upload</button>
+  </form>
+
+  <a href="http://127.0.0.1:5500/Client/main.html">After upload click</a>
+
+  <p id="status"></p>
+
+  <script>
+    const uploadForm = document.getElementById('uploadForm');
+    const status = document.getElementById('status');
+
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        status.textContent = "Please select a file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          alert("Upload successful");
+          window.location.href = 'http://127.0.0.1:5500/Client/main.html';
+        } else {
+          status.textContent = "Upload failed.";
+        }
+      } catch (error) {
+        console.error(error);
+        status.textContent = "An error occurred.";
+      }
+    });
+  </script>
+</body>
+</html>
