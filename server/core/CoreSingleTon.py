@@ -1,4 +1,4 @@
-from WarehouseModel import WarehouseModel
+from core.WarehouseModel import WarehouseModel
 from svg.SvgRenderer import SvgRenderer
 
 class CoreSingleTon:

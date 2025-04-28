@@ -2,8 +2,9 @@ import copy
 import math
 import xml.etree.ElementTree as ET
 
-from GraphModels import Robot, ModelElementType, PathNode, ShelveStop, QueueNode, QueueLine, PathEdge, ModelElement
-from WarehouseModel import WarehouseModel
+from core.GraphModels import PathNode, ShelveStop, QueueNode
+from core.RobotModel import Robot, ModelElementType, ModelElement
+from core.WarehouseModel import WarehouseModel
 from svg.SvgRobotView import SvgRobotView
 
 
@@ -36,7 +37,6 @@ class SvgRenderer:
 
         if robot.current_element_type in [ModelElementType.DRIVABLE_NODE, ModelElementType.SHELVE_STOP,ModelElementType.QUEUE_STOP]:
             x, y = self.get_position_of_nodelike_element(robot.current_element)
-            print(robot.id, robot.current_element.distance_from_leave)
 
         elif robot.current_element_type in [ModelElementType.DRIVABLE_EDGE, ModelElementType.QUEUE_LINE]:
             target_x, target_y = self.get_position_of_nodelike_element(robot.target_element)

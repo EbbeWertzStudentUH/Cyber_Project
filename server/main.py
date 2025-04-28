@@ -1,11 +1,8 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
-import shutil
-import os
 
-from core import CORE_SINGLETON
-from svg.SvgExporter import ModelExporter
+from core.CoreSingleTon import CORE_SINGLETON
 from svg.SvgToModelBuilder import SvgToModelBuilder
 
 app = FastAPI()
@@ -65,4 +62,4 @@ async def get_svg():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("web_ui_api_main:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)

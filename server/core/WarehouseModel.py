@@ -1,4 +1,6 @@
-from GraphModels import PathGraph, ShelveStop, QueueLine, Robot, ModelElementType
+from core.GraphModels import PathGraph, ShelveStop, QueueLine
+from core.RobotModel import Robot, ModelElementType
+
 
 class WarehouseModel:
     def __init__(self, graph:PathGraph, shelve_stops:list[ShelveStop], queue_line:QueueLine):
