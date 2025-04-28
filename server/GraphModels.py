@@ -44,3 +44,14 @@ class ShelveStop:
 
         return cls(edge=edge, shelve_id=shelve_id, node_1_distance=t)
 
+@dataclass
+class QueueNode:
+    distance_from_leave: float
+
+@dataclass
+class QueueLine:
+    enter_coordinate: tuple[float, float]
+    leave_coordinate: tuple[float, float]
+    queue_nodes: list[QueueNode] # is sorted from enter to leave
+    connected_enter_node_id: int
+    connected_leave_node_id: int

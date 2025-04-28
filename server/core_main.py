@@ -11,7 +11,6 @@ if __name__ == '__main__':
 
     builder = SvgToModelBuilder(svg_content)
     model = builder.build()
-    print(model)
     exporter = ModelExporter(model, builder.extractor.get_metadata())
     out_svg = exporter.to_svg()
 

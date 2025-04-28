@@ -1,6 +1,7 @@
+import math
 from typing import List
 
-from GraphModels import PathNode, PathGraph, PathEdge, ShelveStop
+from GraphModels import PathNode, PathGraph, PathEdge, ShelveStop, QueueNode, QueueLine
 from WarehouseModel import WarehouseModel
 from svg.SvgModels import SvgLineSegment, SvgCircle, SvgRgbMatch, SvgText, SvgRectangle
 from svg.SvgExtractor import SVGExtractor
@@ -10,17 +11,28 @@ class SvgToModelBuilder:
     def __init__(self, svg_content: str, circle_radius=0.2):
         self.svg_content = svg_content
         self.circle_radius = circle_radius
+
         self.drivable_path_color = SvgRgbMatch(r=-80, g=-80, b=100)
+
         self.textbox_color = SvgRgbMatch(r=100, g=100, b=100)
         self.shelve_stop_color = SvgRgbMatch(r=100, g=100, b=-80)
+
+        self.queue_line_color = SvgRgbMatch(r=100, g=-80, b=-80)
+        self.queue_node_color = SvgRgbMatch(r=-80, g=100, b=-80)
+
         self.extractor = SVGExtractor(svg_content)
         self.graph = PathGraph()
         self.shelve_stops = []
+        self.queue_line = None
+
+        self.queue_enter_connected_node = None
+        self.queue_leave_connected_node = None
 
     def build(self):
         self._build_graph()
         self._build_shelve_stops()
-        return WarehouseModel(self.graph, self.shelve_stops)
+        self._build_queue_line()
+        return WarehouseModel(self.graph, self.shelve_stops, self.queue_line)
 
     def _build_shelve_stops(self):
         """Builds ShelveStops from the yellow items and text boxes in the svg"""
@@ -37,11 +49,35 @@ class SvgToModelBuilder:
             shelve_stop = ShelveStop.from_coordinates(circle.cx, circle.cy, path_edge, text.text)
             self.shelve_stops.append(shelve_stop)
 
+    def _build_queue_line(self):
+        """Builds the QueueLine model from the red line and red and green circles"""
+        red_line = self.extractor.extract_lines(self.queue_line_color)[0]
+        red_circle = self.extractor.extract_circles(self.queue_line_color)[0]
+        green_circles = self.extractor.extract_circles(self.queue_node_color)
+
+        # the start of line should be the red circle
+        leave_x, leave_y = red_line.start
+
+        line_end_x, line_end_y = red_line.end
+        x1, y1 = red_circle.cx - self.circle_radius, red_circle.cy - self.circle_radius
+        x2, y2 = red_circle.cx + self.circle_radius, red_circle.cy + self.circle_radius
+        # if red is on the end, swap the start for end
+        if self._coordinate_is_in_bounding_box(line_end_x, line_end_y, x1, y1, x2, y2):
+            leave_x, leave_y = red_line.end
+
+        node_disntances = [self._distance(leave_x, leave_y, c.cx, c.cy) for c in [red_circle] + green_circles]
+        queue_nodes = [QueueNode(distance_from_leave=dist) for dist in sorted(node_disntances, reverse=True)]
+        enter_coordinate = (green_circles[0].cx, green_circles[0].cy)
+        leave_coordinate = (red_circle.cx, red_circle.cy)
+        self.queue_line = QueueLine(enter_coordinate, leave_coordinate, queue_nodes, self.queue_enter_connected_node, self.queue_leave_connected_node)
+
     def _build_graph(self):
         """Builds a PathGraph from the blue paths in the svg"""
         path_lines = self.extractor.extract_lines(self.drivable_path_color)
         path_circles = self.extractor.extract_circles(self.drivable_path_color)
         circle_to_node_id = dict[SvgCircle,int]()  # key:Circle -> value:node id
+        red_circle = self.extractor.extract_circles(self.queue_line_color)[0]
+        green_circles = self.extractor.extract_circles(self.queue_node_color)
 
         # add nodes
         for i, circle in enumerate(path_circles):
@@ -60,6 +96,12 @@ class SvgToModelBuilder:
                 node2_id = circle_to_node_id[intersecting_circles[i + 1]]
                 edge = PathEdge(self.graph.nodes[node1_id], self.graph.nodes[node2_id])
                 self.graph.add_edge(node1_id, node2_id, edge)
+
+            if len(intersecting_circles) == 1:
+                if self._line_intersects_circle(line, red_circle):
+                    self.queue_leave_connected_node = circle_to_node_id[intersecting_circles[0]]
+                elif len(self._get_intersecting_circles(line, green_circles)) > 0:
+                    self.queue_enter_connected_node = circle_to_node_id[intersecting_circles[0]]
 
     def _get_intersecting_circles(self, line: SvgLineSegment, circles: List[SvgCircle]) -> List[SvgCircle]:
         """Returns a list of Circle objects that intersect with the given LineSegment object."""
@@ -100,7 +142,8 @@ class SvgToModelBuilder:
         end_is_in = self._coordinate_is_in_bounding_box(x2, y2, rect.x, rect.y, rect.x + rect.width, rect.y + rect.height)
         return start_is_in or end_is_in
 
-    def _coordinate_is_in_bounding_box(self, x, y, box_x1, box_y1, box_x2, box_y2):
+    @staticmethod
+    def _coordinate_is_in_bounding_box(x, y, box_x1, box_y1, box_x2, box_y2):
         horizontal = min(box_x1, box_x2) < x < max(box_x1, box_x2)
         vertical = min(box_y1, box_y2) < y < max(box_y1, box_y2)
         return horizontal and vertical
@@ -127,3 +170,7 @@ class SvgToModelBuilder:
         dx, dy = x2 - x1, y2 - y1
         d = abs(dy * x - dx * y + x2 * y1 - y2 * x1) / ((dx ** 2 + dy ** 2) ** 0.5)
         return d
+
+    @staticmethod
+    def _distance(x_start, y_start, x, y) -> float:
+        return math.sqrt((x - x_start) ** 2 + (y - y_start) ** 2)
