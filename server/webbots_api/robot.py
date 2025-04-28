@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import paho.mqtt.client as mqtt
 from dataclasses import dataclass
@@ -8,6 +9,12 @@ class MovementCommand:
     y_dir: float
     degree: float
     speed: float
+
+@dataclass
+class PanicSignal:
+    robot_id: str
+    reason: str
+    timestamp: str
 
 broker = "localhost"
 port = 1883
@@ -24,6 +31,19 @@ def on_message(client, userdata, msg):
     payload = json.loads(msg.payload.decode())
     command = MovementCommand(**payload)
     print(f"Received MovementCommand: {command}")
+
+def send_panic(reason: str):
+    client = mqtt.Client()
+    client.connect(broker, port, 60)
+    
+    panic = PanicSignal(robot_id=robot_id, reason=reason, timestamp=datetime.utcnow().isoformat())
+    payload = json.dumps(panic.__dict__)
+    
+    topic = f"robots/{robot_id}/panic"
+    client.publish(topic, payload)
+    client.disconnect()
+
+send_panic("Low battery detected!")
 
 client = mqtt.Client()
 client.on_connect = on_connect
