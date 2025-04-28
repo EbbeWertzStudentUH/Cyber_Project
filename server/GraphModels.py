@@ -72,8 +72,10 @@ ModelElement = Union[PathNode,PathEdge,ShelveStop,QueueLine,QueueNode]
 @dataclass
 class Robot:
     id:str
+    previous_element_type: ModelElementType | None
     current_element_type: ModelElementType
     target_element_type: ModelElementType | None
+    previous_element: ModelElement | None
     current_element: ModelElement
     target_element: ModelElement | None
     is_idle: bool
