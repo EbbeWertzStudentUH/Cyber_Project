@@ -1,10 +1,11 @@
-from GraphModels import PathGraph, ShelveStop
+from GraphModels import PathGraph, ShelveStop, QueueLine
 
 
 class WarehouseModel:
-    def __init__(self, graph:PathGraph, shelve_stops:list[ShelveStop]):
+    def __init__(self, graph:PathGraph, shelve_stops:list[ShelveStop], queue_line:QueueLine):
         self.graph =graph
         self.shelve_stops = shelve_stops
+        self.queue_line = queue_line
 
 class ModelSingleTon:
     def __init__(self):
