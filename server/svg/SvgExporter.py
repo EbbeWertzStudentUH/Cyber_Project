@@ -7,12 +7,11 @@ from svg.SvgModels import SvgMetaData
 
 
 class ModelExporter:
-    def __init__(self, model: WarehouseModel, output_file, svg_metadata: SvgMetaData):
+    def __init__(self, model: WarehouseModel, svg_metadata: SvgMetaData):
         self.model = model
-        self.output_file = output_file
         self.metadata = svg_metadata
 
-    def create_new_svg(self):
+    def to_svg(self):
         """Create a new SVG with randomized line colors and original circles."""
         svg_attrib = {
             'xmlns': "http://www.w3.org/2000/svg",
@@ -37,7 +36,8 @@ class ModelExporter:
 
 
         tree = ET.ElementTree(new_root)
-        tree.write(self.output_file, encoding="utf-8", xml_declaration=True)
+        return ET.tostring(tree.getroot(), encoding="utf-8", xml_declaration=True).decode('utf-8')
+        # tree.write(self.output_file, encoding="utf-8", xml_declaration=True)
 
     @staticmethod
     def create_circle(x, y, color, root):

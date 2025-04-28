@@ -4,10 +4,11 @@ from svg.SvgModels import SvgMetaData, SvgRgbMatch, SvgLineSegment, SvgCircle, S
 
 
 class SVGExtractor:
-    def __init__(self, svg_file):
-        self.svg_file = svg_file
+    def __init__(self, svg_string):
+        self.svg_string = svg_string
 
-        tree = ET.parse(self.svg_file)
+        # tree = ET.parse(self.svg_file)
+        tree = ET.ElementTree(ET.fromstring(self.svg_string))
         self.root = tree.getroot()
         w = self.root.attrib.get('width', '100%')
         h = self.root.attrib.get('height', '100%')

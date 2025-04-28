@@ -7,13 +7,13 @@ from svg.SvgExtractor import SVGExtractor
 
 
 class SvgToModelBuilder:
-    def __init__(self, svg_file: str, circle_radius=0.2):
-        self.svg_file = svg_file
+    def __init__(self, svg_content: str, circle_radius=0.2):
+        self.svg_content = svg_content
         self.circle_radius = circle_radius
         self.drivable_path_color = SvgRgbMatch(r=-80, g=-80, b=100)
         self.textbox_color = SvgRgbMatch(r=100, g=100, b=100)
         self.shelve_stop_color = SvgRgbMatch(r=100, g=100, b=-80)
-        self.extractor = SVGExtractor(svg_file)
+        self.extractor = SVGExtractor(svg_content)
         self.graph = PathGraph()
         self.shelve_stops = []
 
