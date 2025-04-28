@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View SVG</title>
+</head>
+<body>
+  <h1>Uploaded SVG</h1>
+
+  <div id="svgContainer">
+    Loading SVG...
+  </div>
+
+  <br>
+  <a href="/upload.html">Upload another SVG</a>
+
+  <script>
+    async function loadSVG() {
+      try {
+        const response = await fetch('/api/svg');
+        if (!response.ok) {
+          document.getElementById('svgContainer').textContent = "Failed to load SVG.";
+          return;
+        }
+        
+        const svgText = await response.text();
+        document.getElementById('svgContainer').innerHTML = svgText;
+      } catch (error) {
+        console.error(error);
+        document.getElementById('svgContainer').textContent = "Error loading SVG.";
+      }
+    }
+
+    loadSVG();
+  </script>
+</body>
+</html>
