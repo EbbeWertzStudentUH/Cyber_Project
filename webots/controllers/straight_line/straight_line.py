@@ -84,7 +84,7 @@ def zoek_en_centreer_op_bol():
             vy = -0.1 if error_x > 0 else 0.1  # naar links of rechts
 
         # Als bol gecentreerd en dichtbij → stop
-        if abs(error_x) <= 0.05 and error_y <= 0.05:
+        if abs(error_x) <= 0.05 and abs(error_y) <= 0.05:
             print("Bol exact onder robot!")
             break
 
@@ -135,7 +135,7 @@ def rijdt(richting_rad, afstand):
 rijdt(0, 1.0)            # 1 meter vooruit
 rijdt(math.pi/2, 1.0)    # 1 meter naar links
 rijdt(-math.pi/4, 1.0)   # 1 meter diagonaal rechtsvoor
-rijdt(math.pi, 1.0)
+rijdt(math.pi, 1.1)
 
 # Blijf leven zonder iets te doen, en detecteer witte bollen
 while robot.step(TIME_STEP) != -1:
