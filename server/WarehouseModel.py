@@ -10,9 +10,12 @@ class ModelSingleTon:
     def __init__(self):
         self.model = None
         self.svg_metadata = None
+        self.original_svg = None
     def set_model(self, model: WarehouseModel):
         self.model = model
     def set_svg_metadata(self, svg_metadata: dict):
         self.svg_metadata = svg_metadata
+    def set_original_svg(self, original_svg: bytes):
+        self.original_svg = original_svg
 
 MODEL_SINGLETON = ModelSingleTon()

@@ -26,15 +26,17 @@ async def upload_svg(file: UploadFile = File(...)):
     builder = SvgToModelBuilder(svg_content)
     MODEL_SINGLETON.set_model(builder.build())
     MODEL_SINGLETON.set_svg_metadata(builder.extractor.get_metadata())
+    MODEL_SINGLETON.set_original_svg(svg_content)
 
     return {"message": "SVG uploaded and processed successfully"}
 
 @app.get("/api/svg")
 async def get_svg():
 
-    exporter = ModelExporter(MODEL_SINGLETON.model, MODEL_SINGLETON.svg_metadata)
-    svg_content = exporter.to_svg()
+    # exporter = ModelExporter(MODEL_SINGLETON.model, MODEL_SINGLETON.svg_metadata)
+    # svg_content = exporter.to_svg()
 
+    svg_content = MODEL_SINGLETON.original_svg
     return Response(content=svg_content, media_type="image/svg+xml")
 
 if __name__ == "__main__":
