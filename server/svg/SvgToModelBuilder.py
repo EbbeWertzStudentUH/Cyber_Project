@@ -1,7 +1,5 @@
 from typing import List
 
-from matplotlib import lines
-
 from GraphModels import PathNode, PathGraph, PathEdge, ShelveStop
 from WarehouseModel import WarehouseModel
 from svg.SvgModels import SvgLineSegment, SvgCircle, SvgRgbMatch, SvgText, SvgRectangle
