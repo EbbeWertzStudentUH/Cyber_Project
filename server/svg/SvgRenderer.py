@@ -2,7 +2,7 @@ import copy
 import math
 import xml.etree.ElementTree as ET
 
-from core.model.GraphModels import PathNode, ShelveStop, QueueNode
+from core.model.graph_models import PathNode, ShelveStop, QueueNode
 from core.model.RobotModel import Robot, ModelElementType, ModelElement
 from core.model.WarehouseModel import WarehouseModel
 from svg.SvgRobotView import SvgRobotView

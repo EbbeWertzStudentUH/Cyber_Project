@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from svg.SvgModels import SvgMetaData, SvgRgbMatch, SvgCircle, SvgText, SvgRectangle, SvgLineSegment
+from svg.svg_models import SvgMetaData, SvgRgbMatch, SvgCircle, SvgText, SvgRectangle, SvgLineSegment
 
 
 class SVGExtractor:

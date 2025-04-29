@@ -1,7 +1,7 @@
 from core.model.RobotModel import ModelElementType
 from core.model.WarehouseModel import WarehouseModel
 from core.scheduling.PathPlanner import PathPlanner
-from core.scheduling.QueueManager import QueueManager
+from core.scheduling.RobotQueueManager import QueueManager
 from core.scheduling.TaskManager import TaskManager
 
 class Scheduler:
@@ -11,17 +11,17 @@ class Scheduler:
         self.queue_manager = QueueManager(model)
         self.task_manager = TaskManager(model, self.path_planner)
 
-    def handle_event(self, event_type: str, robot_id: str | None = None):
+    def update(self):
         self.queue_manager.compact_queue()
-
+        idle_bots = [r for r in self.model.robots.values()if r.is_idle]
         if self.model.product_queue:
-            idle_robots = [
-                r for r in self.model.robots.values()
-                if r.current_element_type == ModelElementType.QUEUE_STOP and r.is_idle
-            ]
-            if idle_robots:
+            waiting_robots = [r for r in idle_bots if r.current_element_type == ModelElementType.QUEUE_STOP]
+            if waiting_robots:
                 product_id = self.model.pop_product()
-                self.task_manager.assign_fetch_task(idle_robots[0], product_id)
+                self.task_manager.assign_fetch_task(waiting_robots[0], product_id)
 
-        if event_type == 'robot_arrival' and robot_id:
-            self.task_manager.continue_robot_task(robot_id)
+        for robot in idle_bots:
+            self.task_manager.continue_robot_task(robot.id)
+
+    def register_robot_arrival(self, robot_id):
+        self.model.robots[robot_id].target_arrive()

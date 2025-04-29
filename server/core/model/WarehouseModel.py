@@ -1,4 +1,4 @@
-from core.model.GraphModels import PathGraph, ShelveStop, QueueLine
+from core.model.graph_models import PathGraph, ShelveStop, QueueLine
 from core.model.RobotModel import Robot, ModelElementType
 
 

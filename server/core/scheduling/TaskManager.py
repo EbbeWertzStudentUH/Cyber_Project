@@ -1,4 +1,4 @@
-from core.model.GraphModels import PathNode, PathEdge, ShelveStop, QueueNode
+from core.model.graph_models import PathNode, PathEdge, ShelveStop, QueueNode
 from core.model.RobotModel import ModelElement, Robot, ModelElementType
 from core.model.WarehouseModel import WarehouseModel
 
@@ -58,4 +58,3 @@ class TaskManager:
             return ModelElementType.SHELVE_STOP
         elif isinstance(element, QueueNode):
             return ModelElementType.QUEUE_STOP
-        raise ValueError(f"Unknown element type: {type(element)}")

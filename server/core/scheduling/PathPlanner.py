@@ -1,6 +1,6 @@
 import networkx as nx
 
-from core.model.GraphModels import ShelveStop
+from core.model.graph_models import ShelveStop
 from core.model.RobotModel import Robot, ModelElement
 from core.model.WarehouseModel import WarehouseModel
 
