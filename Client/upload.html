@@ -1,9 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Upload SVG</title>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <title>Upload SVG Dashboard</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f6f8;
+        color: #333;
+      }
+  
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      }
+  
+      h1 {
+        text-align: center;
+        color: #4A90E2;
+        margin-bottom: 20px;
+      }
+  
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+  
+      input[type="file"] {
+        padding: 10px;
+        border: 2px dashed #4A90E2;
+        background: #f0f8ff;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+  
+      button {
+        background-color: #4A90E2;
+        color: #fff;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+  
+      button:hover {
+        background-color: #357ABD;
+      }
+  
+      #status {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #28a745;
+      }
+  
+      #inputsContainer {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+  
+      #inputsContainer input[type="text"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+  
+      a {
+        display: block;
+        margin-top: 20px;
+        text-align: center;
+        color: #4A90E2;
+        text-decoration: none;
+        font-weight: bold;
+      }
+  
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
 <body>
   <h1>Upload an SVG</h1>
   
@@ -41,7 +127,17 @@
         });
 
         if (response.ok) {
-          alert("Upload successful");
+          const queueResponse = await fetch('http://127.0.0.1:8080/api/queu_lengt');
+          if (queueResponse.ok) {
+            const data = await queueResponse.json();
+            status.textContent = `Upload successful. Queue size: ${data.q}`;
+
+            // Create input fields based on q
+            createInputFields(data.q);
+
+          } else {
+            status.textContent = "Upload successful, but failed to fetch queue size.";
+          }
         } else {
           status.textContent = "Upload failed.";
         }
@@ -50,6 +146,71 @@
         status.textContent = "An error occurred.";
       }
     });
+
+    function createInputFields(q) {
+      // First remove old inputs if any
+      const oldInputs = document.getElementById('inputsContainer');
+      if (oldInputs) {
+        oldInputs.remove();
+      }
+
+      const container = document.createElement('div');
+      container.id = 'inputsContainer';
+
+      for (let i = 0; i < q; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = `Queuslot_${i}`;
+        input.placeholder = `Queuslot ${i}`;
+        container.appendChild(input);
+        container.appendChild(document.createElement('br'));
+      }
+      
+      const submitButton = document.createElement('button');
+      submitButton.type = 'submit';
+      submitButton.textContent = 'Submit Queue';
+      submitButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        submitQueueData(q);
+      });
+
+      container.appendChild(submitButton);
+      document.body.appendChild(container);
+    }
+
+    async function submitQueueData(q) {
+      const inputs = document.querySelectorAll('input[type="text"]');
+      const data = {};
+
+      inputs.forEach((input, index) => {
+        data[index] = input.value;
+      });
+
+      console.log(data)
+
+      try {
+        postQueue(data)
+      } catch (error) {
+        console.error(error);
+        alert("An error occurred while submitting the queue.");
+      }
+
+    async function postQueue(data) {
+      const response = await fetch('http://127.0.0.1:8080/api/submit_queue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+    
+      if (response.ok) {
+        alert("Queue submitted successfully!");
+      } else {
+        alert("Failed to submit queue.");
+      }
+    }
+  } 
   </script>
 </body>
 </html>

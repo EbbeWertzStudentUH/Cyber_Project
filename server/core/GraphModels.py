@@ -46,12 +46,13 @@ class ShelveStop:
 
 @dataclass
 class QueueNode:
+    index: int # leave node = 0
     distance_from_leave: float
 
 @dataclass
 class QueueLine:
     enter_coordinate: tuple[float, float]
     leave_coordinate: tuple[float, float]
-    queue_nodes: list[QueueNode] # is sorted from enter to leave
+    queue_nodes: list[QueueNode] # is sorted from leave to enter
     connected_enter_node_id: int
     connected_leave_node_id: int
