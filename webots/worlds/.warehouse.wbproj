@@ -5,7 +5,7 @@ sceneTreePerspectives: 000000ff000000010000000300000022000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 projectionMode: ORTHOGRAPHIC
-orthographicViewHeight: 4.64679
-textFiles: 0 "controllers/straight_line/straight_line.py" "worlds/warehouse.wbt" "protos/OmniBot.proto"
+orthographicViewHeight: 8.26662
+textFiles: 2 "controllers/straight_line/straight_line.py" "worlds/warehouse.wbt" "protos/OmniBot.proto"
 consoles: Console:All:All
-renderingDevicePerspectives: robot_omni:color_sensor;1;0.85;0;0.0374101
+renderingDevicePerspectives: robot_omni:color_sensor;0;1;0;0
