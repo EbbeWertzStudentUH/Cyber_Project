@@ -1,19 +1,21 @@
-from core.CoreSingleTon import CORE_SINGLETON
 from core.model.RobotModel import ModelElement, Robot
 from core.model.WarehouseModel import WarehouseModel
 from core.model.graph_models import PathNode, ShelveStop, QueueNode
+from webbots_api.RobotCommander import RobotCommander
 
 
 class TaskManager:
-    def __init__(self, model: WarehouseModel, path_planner):
+    def __init__(self, model: WarehouseModel, path_planner, commander:RobotCommander):
         self.model = model
         self.path_planner = path_planner
+        self.commander = commander
         self.robot_paths = dict[str, list[ModelElement]]()
 
     def assign_fetch_task(self, robot: Robot, product_id: str):
         shelve_stop = next(s for s in self.model.shelve_stops if s.shelve_id == product_id)
         path_to_stop = self.path_planner.plan_path_from_queue(shelve_stop)
         path_back_to_queue = self.path_planner.plan_path_to_queue(shelve_stop)
+        robot.product_id = product_id
         self.robot_paths[robot.id] = path_to_stop + path_back_to_queue
 
     def command_next_robot_task(self, robot_id: str):
@@ -24,10 +26,13 @@ class TaskManager:
         path = self.robot_paths[robot_id]
         next_element = path.pop(0)
 
+        if isinstance(robot.current_element, ShelveStop) and not robot.has_product:
+            self.commander.command_pickup(robot.id, robot.product_id)
+            robot.has_product = True
+
         start_coord = self._node_coordinate(robot.current_element)
         end_coord = self._node_coordinate(next_element)
-        CORE_SINGLETON.commander.calculate_and_command_move(robot_id, start_coord, end_coord)
-
+        self.commander.calculate_and_command_move(robot_id, start_coord, end_coord)
         robot.goto_element_from_idle(None, next_element)
 
 

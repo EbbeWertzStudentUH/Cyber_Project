@@ -55,7 +55,7 @@ async def get_svg():
 
     # exporter = ModelExporter(MODEL_SINGLETON.model, MODEL_SINGLETON.svg_metadata)
     # svg_content = exporter.to_svg()
-
+    CORE_SINGLETON.update_view()
     svg_content = CORE_SINGLETON.renderer.to_svg()
     return Response(content=svg_content, media_type="image/svg+xml")
 

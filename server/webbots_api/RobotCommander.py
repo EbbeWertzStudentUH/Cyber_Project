@@ -19,8 +19,8 @@ class RobotCommander:
         self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = on_connect
         self.mqtt_client.on_message = on_message
-        self.mqtt_client.connect(broker_url, broker_port, 60)
-        self.mqtt_client.loop_forever()
+        # self.mqtt_client.connect(broker_url, broker_port, 60)
+        # self.mqtt_client.loop_forever()
 
     def disconnect(self):
         self.mqtt_client.disconnect()
@@ -28,6 +28,11 @@ class RobotCommander:
     def command_move(self, robot_id: str, command: MovementCommand):
         topic = f"robots/{robot_id}/move"
         payload = json.dumps(command.__dict__)
+        self.mqtt_client.publish(topic, payload)
+
+    def command_pickup(self, robit_id:str, product_id:str):
+        topic = f"robots/{robit_id}/pickup"
+        payload = json.dumps({"product_id": product_id})
         self.mqtt_client.publish(topic, payload)
 
     def calculate_and_command_move(self, robot_id:str, start_coord:tuple[float, float], end_coord:tuple[float, float]):

@@ -2,8 +2,8 @@ import copy
 import math
 import xml.etree.ElementTree as ET
 
-from core.model.graph_models import PathNode, ShelveStop, QueueNode
-from core.model.RobotModel import Robot, ModelElementType, ModelElement
+from core.model.graph_models import PathNode, ShelveStop, QueueNode, QueueLine
+from core.model.RobotModel import Robot, ModelElement
 from core.model.WarehouseModel import WarehouseModel
 from svg.SvgRobotView import SvgRobotView
 
@@ -35,10 +35,10 @@ class SvgRenderer:
         x, y = 0.0, 0.0
         angle = 0.0
 
-        if robot.current_element_type in [ModelElementType.DRIVABLE_NODE, ModelElementType.SHELVE_STOP,ModelElementType.QUEUE_STOP]:
+        if isinstance(robot.current_element, (PathNode, ShelveStop, QueueNode)):
             x, y = self.get_position_of_nodelike_element(robot.current_element)
 
-        elif robot.current_element_type in [ModelElementType.DRIVABLE_EDGE, ModelElementType.QUEUE_LINE]:
+        elif not robot.current_element or isinstance(robot.current_element, QueueLine):
             target_x, target_y = self.get_position_of_nodelike_element(robot.target_element)
             source_x, source_y = self.get_position_of_nodelike_element(robot.previous_element)
 
@@ -56,9 +56,6 @@ class SvgRenderer:
             y = target_y - dy
             angle = math.degrees(math.atan2(dy, dx))
 
-        else:
-            raise ValueError(f"Unsupported robot current_element_type: {robot.current_element_type}")
-
         robot_view = SvgRobotView(robot_id, has_package, is_idle, angle, x, y)
         self.root.append(robot_view.to_element())
 
@@ -68,15 +65,6 @@ class SvgRenderer:
         elif isinstance(element, ShelveStop):
             return element.coordinate()
         elif isinstance(element, QueueNode):
-            queue_line = self.model.queue_line
-            leave_x, leave_y = queue_line.leave_coordinate
-            enter_x, enter_y = queue_line.enter_coordinate
-            dx = enter_x - leave_x
-            dy = enter_y - leave_y
-            total_length = (dx ** 2 + dy ** 2) ** 0.5
-            fraction = element.distance_from_leave / total_length
-            x = leave_x + dx * fraction
-            y = leave_y + dy * fraction
-            return x, y
+            return element.coordinate(self.model.queue_line)
         else:
             raise TypeError(f"A node-like element was expected, not: {type(element)}")

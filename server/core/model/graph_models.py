@@ -6,6 +6,8 @@ class PathNode:
     x: float
     y: float
 
+    def __repr__(self): return f"path node {self.id}"
+
 @dataclass
 class PathEdge:
     node1: PathNode
@@ -44,6 +46,9 @@ class ShelveStop:
 
         return cls(edge=edge, shelve_id=shelve_id, node_1_distance=t)
 
+    def __repr__(self): return f"stop {self.shelve_id}"
+
+
 
 @dataclass
 class QueueNode:
@@ -53,9 +58,16 @@ class QueueNode:
     def coordinate(self, line):
         leave_x, leave_y = line.leave_coordinate
         enter_x, enter_y = line.enter_coordinate
-        x = leave_x + (enter_x - leave_x) * self.distance_from_leave
-        y = leave_y + (enter_y - leave_y) * self.distance_from_leave
+        dx = enter_x - leave_x
+        dy = enter_y - leave_y
+        total_length = (dx ** 2 + dy ** 2) ** 0.5
+        fraction = self.distance_from_leave / total_length
+        x = leave_x + dx * fraction
+        y = leave_y + dy * fraction
         return x, y
+
+    def __repr__(self): return f"queue node {self.index}"
+
 
 @dataclass
 class QueueLine:
@@ -64,4 +76,6 @@ class QueueLine:
     queue_nodes: list[QueueNode] # is sorted from leave to enter
     connected_enter_node_id: int
     connected_leave_node_id: int
+
+    def __repr__(self): return "line"
 

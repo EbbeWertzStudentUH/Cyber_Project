@@ -1,15 +1,13 @@
-import math
-
-from core.CoreSingleTon import CORE_SINGLETON
 from core.model.RobotModel import Robot
 from core.model.WarehouseModel import WarehouseModel
 from core.model.graph_models import QueueNode, QueueLine
-from webbots_api.command_types import MovementCommand
+from webbots_api.RobotCommander import RobotCommander
 
 
 class QueueManager:
-    def __init__(self, model: WarehouseModel):
+    def __init__(self, model: WarehouseModel, commander:RobotCommander):
         self.model = model
+        self.commander = commander
 
     def compact_queue(self):
         sorted_stops = sorted(self.model.queue_line.queue_nodes, key=lambda n: n.index)
@@ -20,7 +18,7 @@ class QueueManager:
         for robot in robots_on_stops:
             assert robot.is_idle
         for robot in robots_on_queue_line:
-            assert not (robot.is_idle or robot.target_element)
+            assert (not robot.is_idle) and robot.target_element
 
         current_occupied = {r.current_element.index: r for r in robots_on_stops}
         arriving_soon = {r.target_element.index for r in robots_on_queue_line}
@@ -50,6 +48,6 @@ class QueueManager:
         start_coord = start_node.coordinate(self.model.queue_line)
         end_coord = target_node.coordinate(self.model.queue_line)
 
-        CORE_SINGLETON.commander.calculate_and_command_move(robot.id, start_coord, end_coord)
+        self.commander.calculate_and_command_move(robot.id, start_coord, end_coord)
 
         robot.goto_element_from_idle(self.model.queue_line, target_node)
