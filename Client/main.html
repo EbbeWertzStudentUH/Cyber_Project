@@ -6,7 +6,7 @@
   <title>View SVG Dashboard</title>
 </head>
 <body>
-  <h1>Uploaded SVG</h1>
+  <h1>Robot planner</h1>
 
   <div id="svgContainer">
     Loading SVG...
@@ -20,15 +20,12 @@
   <h3>Add to Queue</h3>
   <form id="queueForm">
     <input type="text" id="item" placeholder="Item" required>
-    <input type="number" id="position" placeholder="Position" required>
     <button type="submit">Add</button>
   </form>
 
   <div id="queueMessage"></div>
 
   <br>
-  <a href="http://127.0.0.1:5500/Client/upload.html">Upload another SVG</a>
-
   <script>
     async function loadSVG() {
       try {
@@ -60,13 +57,12 @@
     document.getElementById('queueForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const item = document.getElementById('item').value;
-      const position = document.getElementById('position').value;
 
       try {
         const response = await fetch('http://127.0.0.1:8080/api/add_queue_item', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ item, position })
+          body: JSON.stringify({ product_id: item })
         });
 
         const result = await response.json();

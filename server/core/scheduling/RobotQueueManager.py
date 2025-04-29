@@ -9,10 +9,23 @@ class QueueManager:
         self.model = model
         self.commander = commander
 
+    def update(self):
+        self.compact_queue()
+        self.drop_off()
+
+    def drop_off(self):
+        robots = self.model.robots.values()
+        robots_on_stops = [r for r in robots if isinstance(r.current_element, QueueNode)]
+        for r in robots_on_stops:
+            if r.has_product:
+                self.commander.command_drop_off(r.id, r.product_id)
+                r.product_id = None
+                r.has_product = False
+
     def compact_queue(self):
         sorted_stops = sorted(self.model.queue_line.queue_nodes, key=lambda n: n.index)
 
-        robots = list(self.model.robots.values())
+        robots = self.model.robots.values()
         robots_on_stops = [r for r in robots if isinstance(r.current_element, QueueNode)]
         robots_on_queue_line = [r for r in robots if  isinstance(r.current_element, QueueLine)]
         for robot in robots_on_stops:

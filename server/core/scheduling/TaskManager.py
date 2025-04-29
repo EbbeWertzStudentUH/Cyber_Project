@@ -16,7 +16,9 @@ class TaskManager:
         path_to_stop = self.path_planner.plan_path_from_queue(shelve_stop)
         path_back_to_queue = self.path_planner.plan_path_to_queue(shelve_stop)
         robot.product_id = product_id
-        self.robot_paths[robot.id] = path_to_stop + path_back_to_queue
+        full_path = path_to_stop + path_back_to_queue
+        print(full_path)
+        self.robot_paths[robot.id] = full_path
 
     def command_next_robot_task(self, robot_id: str):
         robot = self.model.robots[robot_id]
@@ -25,6 +27,8 @@ class TaskManager:
 
         path = self.robot_paths[robot_id]
         next_element = path.pop(0)
+        if not path:
+            self.robot_paths.pop(robot_id)
 
         if isinstance(robot.current_element, ShelveStop) and not robot.has_product:
             self.commander.command_pickup(robot.id, robot.product_id)

@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 @dataclass
@@ -32,19 +33,23 @@ class ShelveStop:
     node_1_distance: float
 
     def coordinate(self):
-        x = self.edge.node1.x + (self.edge.node2.x - self.edge.node1.x) * self.node_1_distance
-        y = self.edge.node1.y + (self.edge.node2.y - self.edge.node1.y) * self.node_1_distance
+        x1, y1 = self.edge.node1.x, self.edge.node1.y
+        x2, y2 = self.edge.node2.x, self.edge.node2.y
+        dx = x2 - x1
+        dy = y2 - y1
+        total_length = (dx ** 2 + dy ** 2) ** 0.5
+        fraction = self.node_1_distance / total_length
+        x = x1 + dx * fraction
+        y = y1 + dy * fraction
         return x, y
 
     @classmethod
     def from_coordinates(cls, x:float, y:float, edge:PathEdge, shelve_id:str):
         x1, y1 = edge.node1.x, edge.node1.y
-        x2, y2 = edge.node2.x, edge.node2.y
-
-        length_squared = (x2 - x1) ** 2 + (y2 - y1) ** 2
-        t = ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / length_squared
-
-        return cls(edge=edge, shelve_id=shelve_id, node_1_distance=t)
+        dx = x1 - x
+        dy = y1 - y
+        dist = math.sqrt(dx ** 2 + dy ** 2)
+        return cls(edge=edge, shelve_id=shelve_id, node_1_distance=dist)
 
     def __repr__(self): return f"stop {self.shelve_id}"
 

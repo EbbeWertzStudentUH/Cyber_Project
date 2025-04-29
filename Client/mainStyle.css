@@ -21,8 +21,14 @@ h1 {
   margin-bottom: 20px;
 }
 
+#svgContainer svg {
+  max-height: 40vh;
+  height: auto;
+  width: auto;
+  max-width: 100%;
+}
+
 #svgContainer {
-  min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;

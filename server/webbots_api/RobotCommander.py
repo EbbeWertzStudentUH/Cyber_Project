@@ -35,6 +35,11 @@ class RobotCommander:
         payload = json.dumps({"product_id": product_id})
         self.mqtt_client.publish(topic, payload)
 
+    def command_drop_off(self, robit_id:str, product_id:str):
+        topic = f"robots/{robit_id}/drop_off"
+        payload = json.dumps({"product_id": product_id})
+        self.mqtt_client.publish(topic, payload)
+
     def calculate_and_command_move(self, robot_id:str, start_coord:tuple[float, float], end_coord:tuple[float, float]):
         start_x, start_y = start_coord
         end_x, end_y = end_coord

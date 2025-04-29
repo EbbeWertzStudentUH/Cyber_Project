@@ -14,10 +14,10 @@ class Scheduler:
         self.task_manager = TaskManager(model, self.path_planner, commander)
 
     def update(self):
-        self.queue_manager.compact_queue()
+        self.queue_manager.update()
         idle_bots = [r for r in self.model.robots.values()if r.is_idle]
         if self.model.product_queue:
-            waiting_robots = [r for r in idle_bots if isinstance(r.current_element_type, QueueNode)]
+            waiting_robots = [r for r in idle_bots if isinstance(r.current_element, QueueNode)]
             if waiting_robots:
                 product_id = self.model.pop_product()
                 self.task_manager.assign_fetch_task(waiting_robots[0], product_id)
