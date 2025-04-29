@@ -44,10 +44,18 @@ class ShelveStop:
 
         return cls(edge=edge, shelve_id=shelve_id, node_1_distance=t)
 
+
 @dataclass
 class QueueNode:
-    index: int # leave node = 0
+    index: int  # leave node = 0
     distance_from_leave: float
+
+    def coordinate(self, line):
+        leave_x, leave_y = line.leave_coordinate
+        enter_x, enter_y = line.enter_coordinate
+        x = leave_x + (enter_x - leave_x) * self.distance_from_leave
+        y = leave_y + (enter_y - leave_y) * self.distance_from_leave
+        return x, y
 
 @dataclass
 class QueueLine:
@@ -56,3 +64,4 @@ class QueueLine:
     queue_nodes: list[QueueNode] # is sorted from leave to enter
     connected_enter_node_id: int
     connected_leave_node_id: int
+

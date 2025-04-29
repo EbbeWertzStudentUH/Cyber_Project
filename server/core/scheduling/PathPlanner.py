@@ -1,7 +1,7 @@
 import networkx as nx
 
 from core.model.graph_models import ShelveStop
-from core.model.RobotModel import Robot, ModelElement
+from core.model.RobotModel import ModelElement
 from core.model.WarehouseModel import WarehouseModel
 
 
@@ -17,7 +17,7 @@ class PathPlanner:
         for (n1, n2), edge in self.model.graph.edges.items():
             self.nx_graph.add_edge(n1, n2, weight=1.0, obj=edge)
 
-    def plan_path_from_queue(self, robot: Robot, shelve_stop: ShelveStop) -> list[ModelElement]:
+    def plan_path_from_queue(self, shelve_stop: ShelveStop) -> list[ModelElement]:
         start_node_id = self.model.queue_line.connected_leave_node_id
         n1, n2 = shelve_stop.edge.node1.id, shelve_stop.edge.node2.id
 

@@ -21,7 +21,10 @@ class Scheduler:
                 self.task_manager.assign_fetch_task(waiting_robots[0], product_id)
 
         for robot in idle_bots:
-            self.task_manager.continue_robot_task(robot.id)
+            self.task_manager.command_next_robot_task(robot.id)
+
+        for robot in self.model.robots.values():
+            print(robot)
 
     def register_robot_arrival(self, robot_id):
         self.model.robots[robot_id].target_arrive()

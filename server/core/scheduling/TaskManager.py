@@ -1,6 +1,7 @@
-from core.model.graph_models import PathNode, PathEdge, ShelveStop, QueueNode
-from core.model.RobotModel import ModelElement, Robot, ModelElementType
+from core.CoreSingleTon import CORE_SINGLETON
+from core.model.RobotModel import ModelElement, Robot
 from core.model.WarehouseModel import WarehouseModel
+from core.model.graph_models import PathNode, ShelveStop, QueueNode
 
 
 class TaskManager:
@@ -11,50 +12,29 @@ class TaskManager:
 
     def assign_fetch_task(self, robot: Robot, product_id: str):
         shelve_stop = next(s for s in self.model.shelve_stops if s.shelve_id == product_id)
-        path_to_stop = self.path_planner.plan_path_from_queue(robot, shelve_stop)
+        path_to_stop = self.path_planner.plan_path_from_queue(shelve_stop)
         path_back_to_queue = self.path_planner.plan_path_to_queue(shelve_stop)
-        full_path = path_to_stop + path_back_to_queue
-        self.robot_paths[robot.id] = full_path
-        self._advance(robot.id)
+        self.robot_paths[robot.id] = path_to_stop + path_back_to_queue
 
-    def continue_robot_task(self, robot_id: str):
+    def command_next_robot_task(self, robot_id: str):
         robot = self.model.robots[robot_id]
         if robot_id not in self.robot_paths:
             return
 
-        robot.current_element = robot.target_element
-        robot.current_element_type = robot.target_element_type
-        robot.target_element = None
-        robot.target_element_type = None
-
-        if isinstance(robot.current_element, QueueNode):
-            robot.is_idle = True
-            robot.has_package = False
-            return
-
-        self._advance(robot_id)
-
-    def _advance(self, robot_id: str):
-        robot = self.model.robots[robot_id]
         path = self.robot_paths[robot_id]
-        if not path:
-            return
-
         next_element = path.pop(0)
-        robot.previous_element = robot.current_element
-        robot.previous_element_type = robot.current_element_type
-        robot.current_element_type = ModelElementType.DRIVABLE_EDGE  # assume motion
-        robot.target_element = next_element
-        robot.target_element_type = self._element_type(next_element)
-        robot.is_idle = False
 
-    @staticmethod
-    def _element_type(element: ModelElement):
-        if isinstance(element, PathNode):
-            return ModelElementType.DRIVABLE_NODE
-        elif isinstance(element, PathEdge):
-            return ModelElementType.DRIVABLE_EDGE
-        elif isinstance(element, ShelveStop):
-            return ModelElementType.SHELVE_STOP
-        elif isinstance(element, QueueNode):
-            return ModelElementType.QUEUE_STOP
+        start_coord = self._node_coordinate(robot.current_element)
+        end_coord = self._node_coordinate(next_element)
+        CORE_SINGLETON.commander.calculate_and_command_move(robot_id, start_coord, end_coord)
+
+        robot.goto_element_from_idle(None, next_element)
+
+
+    def _node_coordinate(self, target:ModelElement):
+        if isinstance(target, PathNode):
+            return target.x, target.y
+        elif isinstance(target, ShelveStop):
+            return target.coordinate()
+        elif isinstance(target, QueueNode):
+            return target.coordinate(self.model.queue_line)

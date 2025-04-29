@@ -1,4 +1,6 @@
 import json
+import math
+
 import paho.mqtt.client as mqtt
 from webbots_api.command_types import MovementCommand, PanicSignal
 
@@ -27,3 +29,12 @@ class RobotCommander:
         topic = f"robots/{robot_id}/move"
         payload = json.dumps(command.__dict__)
         self.mqtt_client.publish(topic, payload)
+
+    def calculate_and_command_move(self, robot_id:str, start_coord:tuple[float, float], end_coord:tuple[float, float]):
+        start_x, start_y = start_coord
+        end_x, end_y = end_coord
+        dx, dy = end_x - start_x, end_y - start_y
+        distance = math.hypot(dx, dy)
+        angle = math.degrees(math.atan2(dy, dx)) % 360
+        move_command = MovementCommand(distance=distance, angle=angle)
+        self.command_move(robot_id, move_command)

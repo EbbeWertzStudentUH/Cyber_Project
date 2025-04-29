@@ -1,5 +1,5 @@
 from core.model.graph_models import PathGraph, ShelveStop, QueueLine
-from core.model.RobotModel import Robot, ModelElementType
+from core.model.RobotModel import Robot
 
 
 class WarehouseModel:
@@ -15,7 +15,7 @@ class WarehouseModel:
 
     def set_new_robot(self, robot_id:str, queue_index:int):
         queue_node = self.queue_line.queue_nodes[queue_index]
-        robot = Robot(robot_id, None, ModelElementType.QUEUE_STOP, None, None, queue_node, None, True, False, None)
+        robot = Robot(id=robot_id, current_element=queue_node)
         self.robots[robot_id] = robot
 
     def add_product_to_queue(self, item_shelve_id:str):
