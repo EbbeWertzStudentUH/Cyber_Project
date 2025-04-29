@@ -1,5 +1,5 @@
-from core.GraphModels import PathGraph, ShelveStop, QueueLine
-from core.RobotModel import Robot, ModelElementType
+from core.model.GraphModels import PathGraph, ShelveStop, QueueLine
+from core.model.RobotModel import Robot, ModelElementType
 
 
 class WarehouseModel:

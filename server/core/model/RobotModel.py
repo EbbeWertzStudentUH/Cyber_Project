@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Union
-from core.GraphModels import PathNode, PathEdge, ShelveStop, QueueLine, QueueNode
+from core.model.GraphModels import PathNode, PathEdge, ShelveStop, QueueLine, QueueNode
 
 ModelElement = Union[PathNode,PathEdge,ShelveStop,QueueLine,QueueNode]
 class ModelElementType(Enum):

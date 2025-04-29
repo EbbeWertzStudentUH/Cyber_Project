@@ -1,8 +1,8 @@
 import math
 from typing import List
 
-from core.GraphModels import PathNode, PathGraph, PathEdge, ShelveStop, QueueNode, QueueLine
-from core.WarehouseModel import WarehouseModel
+from core.model.GraphModels import PathNode, PathGraph, PathEdge, ShelveStop, QueueNode, QueueLine
+from core.model.WarehouseModel import WarehouseModel
 from svg.SvgExtractor import SVGExtractor
 from svg.SvgModels import SvgRgbMatch, SvgCircle, SvgLineSegment, SvgText, SvgRectangle
 
