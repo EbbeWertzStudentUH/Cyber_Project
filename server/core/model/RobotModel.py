@@ -22,3 +22,4 @@ class Robot:
     target_element: ModelElement | None
     is_idle: bool
     has_package: bool
+    product_id: str | None
