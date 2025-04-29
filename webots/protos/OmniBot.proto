@@ -953,6 +953,15 @@ DEF OMNI_WHEELS_4 Robot {
       projection "spherical"
       name "color_sensor"
     }
+    Lidar {
+      translation 0 0 0.12
+      # rotation 0 1 0 -1.57
+      name "lidar"
+      fieldOfView 6.28
+      horizontalResolution 512
+      verticalFieldOfView 0.2
+      numberOfLayers 3
+    }
     DEF BODY_TRANS Pose {
       translation 0 0 0.04
       children [

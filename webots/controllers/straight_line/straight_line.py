@@ -6,6 +6,10 @@ TIME_STEP = 32
 robot = Robot()
 kinematic = RobotKinematic.getInstance()
 
+lidar = robot.getDevice("lidar")
+lidar.enable(TIME_STEP)
+lidar.enablePointCloud()
+
 wheels = []
 for name in ["wheel1", "wheel2", "wheel3", "wheel4"]:
     motor = robot.getDevice(name)
@@ -95,10 +99,20 @@ def rijdt(richting_rad, afstand):
     tolerance = 0.01
 
     while True:
-        robot.step(TIME_STEP)
-        kinematic.updateOdometry()
-        current_pos = kinematic.getPos()
+        if robot.step(TIME_STEP) == -1:
+            break
 
+        kinematic.updateOdometry()
+
+        ranges = lidar.getRangeImage()
+        if any(distance < 0.5 for distance in ranges):
+            print("⚠️ Obstacle within 50 cm — stopping robot!")
+            for wheel in wheels:
+                wheel.setVelocity(0.0)
+            return  # stop direct
+        else: print("clear path")
+
+        current_pos = kinematic.getPos()
         dx = current_pos.x - initial_pos.x
         dy = current_pos.y - initial_pos.y
         distance_travelled = math.sqrt(dx**2 + dy**2)
@@ -112,10 +126,8 @@ def rijdt(richting_rad, afstand):
         wheels[i].setVelocity(0.0)
 
 # --- Gebruik ---
-rijdt(0, 1.0)
-rijdt(math.pi/2, 1.0)
-rijdt(-math.pi/4, 1.0)
-rijdt(math.pi, 1.15)
+rijdt(math.pi, 4.0)
+rijdt(-math.pi/2, 1.0)
 
 while robot.step(TIME_STEP) != -1:
     kinematic.updateOdometry()

@@ -163,7 +163,7 @@ Shelf {
 Pedestrian {
   translation 9.15 5.01 1.26
   rotation 0 -1 0 -5.307179586466759e-06
-  name "Jef"
+  name "Koen Yskout"
 }
 Clock {
   translation 9.99 3.97 2.25
