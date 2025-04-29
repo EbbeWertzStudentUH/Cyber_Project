@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="mainStyle.css">
-    <title>View SVG Dashboard</title>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="mainStyle.css">
+  <title>View SVG Dashboard</title>
+</head>
 <body>
   <h1>Uploaded SVG</h1>
 
@@ -12,28 +12,75 @@
     Loading SVG...
   </div>
 
+  <hr>
+
+  <h2>Queue Items</h2>
+  <ul id="queueList">Loading queue...</ul>
+
+  <h3>Add to Queue</h3>
+  <form id="queueForm">
+    <input type="text" id="item" placeholder="Item" required>
+    <input type="number" id="position" placeholder="Position" required>
+    <button type="submit">Add</button>
+  </form>
+
+  <div id="queueMessage"></div>
+
   <br>
   <a href="http://127.0.0.1:5500/Client/upload.html">Upload another SVG</a>
 
   <script>
     async function loadSVG() {
-      console.log("reload")
       try {
         const response = await fetch('http://127.0.0.1:8080/api/svg');
-        if (!response.ok) {
-          document.getElementById('svgContainer').textContent = "Failed to load SVG.";
-          return;
-        }
-        
         const svgText = await response.text();
         document.getElementById('svgContainer').innerHTML = svgText;
       } catch (error) {
-        console.error(error);
         document.getElementById('svgContainer').textContent = "Error loading SVG.";
       }
     }
 
-    setInterval(loadSVG, 500);
+    async function loadQueue() {
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/queue_items');
+        const data = await response.json();
+        const queueList = document.getElementById('queueList');
+        queueList.innerHTML = "";
+
+        data.queue_items.forEach((item, index) => {
+          const li = document.createElement('li');
+          li.textContent = `#${index + 1}: ${item}`;
+          queueList.appendChild(li);
+        });
+      } catch (error) {
+        document.getElementById('queueList').textContent = "Error loading queue.";
+      }
+    }
+
+    document.getElementById('queueForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const item = document.getElementById('item').value;
+      const position = document.getElementById('position').value;
+
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/add_queue_item', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item, position })
+        });
+
+        const result = await response.json();
+        document.getElementById('queueMessage').textContent = result.message || result.detail;
+        loadQueue(); // refresh the list
+      } catch (err) {
+        document.getElementById('queueMessage').textContent = "Failed to add item.";
+      }
+    });
+
+    setInterval(() => {
+      loadSVG();
+      loadQueue();
+    }, 500);
   </script>
 </body>
 </html>

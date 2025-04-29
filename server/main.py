@@ -59,6 +59,33 @@ async def get_svg():
     svg_content = CORE_SINGLETON.renderer.to_svg()
     return Response(content=svg_content, media_type="image/svg+xml")
 
+@app.get("/api/queue_items")
+async def get_queue_items():
+    try:
+        model = CORE_SINGLETON.model
+        queue_items = model.product_queue
+        return {"queue_items": queue_items}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch queue items: {str(e)}")
+    
+@app.post("/api/add_queue_item")
+async def add_queue_item(request: Request):
+    try:
+        data = await request.json()
+        if "item" not in data or "position" not in data:
+            raise HTTPException(status_code=400, detail="Both 'item' and 'position' fields are required")
+            
+        item = data["item"]
+        position = int(data["position"])
+        
+        model = CORE_SINGLETON.model
+        model.add_product_to_queue(item)
+        
+        return {"message": f"Item added to queue at position {position}"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid position value: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to add queue item: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
