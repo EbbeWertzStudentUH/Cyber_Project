@@ -19,17 +19,17 @@ class Scheduler:
         self.queue_manager.update()
         idle_bots = [r for r in self.model.robots.values()if r.is_idle]
         if self.model.product_queue:
-            waiting_robots = [r for r in idle_bots if isinstance(r.current_element, QueueNode)]
-            if waiting_robots:
+            waiting_robots = {r.current_element.index:r for r in idle_bots if isinstance(r.current_element, QueueNode)}
+            if waiting_robots and 0 in waiting_robots:
                 product_id = self.model.pop_product()
                 self.task_manager.assign_fetch_goal(waiting_robots[0], product_id)
 
         for robot in idle_bots:
             task_node = self.task_manager.get_next_task(robot.id)
-            if task_node:# and self.reserver.try_reserve(robot.id, task_node):
+            if task_node and self.reserver.try_reserve(robot.id, task_node):
                 self.task_manager.assign_next_task(robot.id, task_node)
 
     def register_robot_arrival(self, robot_id):
         robot = self.model.robots[robot_id]
         robot.target_arrive()
-        # self.reserver.release_if_moved_off(robot_id, robot.current_element)
+        self.reserver.release(robot_id)

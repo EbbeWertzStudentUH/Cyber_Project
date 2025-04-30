@@ -11,7 +11,7 @@ class PathNode:
 
     def __repr__(self): return f"path node {self.id}"
 
-@dataclass
+@dataclass(frozen=True)
 class PathEdge:
     node1: PathNode
     node2: PathNode
