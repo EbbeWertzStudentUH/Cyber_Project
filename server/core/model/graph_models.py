@@ -1,7 +1,9 @@
 import math
 from dataclasses import dataclass
+from typing import Union
 
-@dataclass
+
+@dataclass(frozen=True)
 class PathNode:
     id: int
     x: float
@@ -26,7 +28,7 @@ class PathGraph:
         self.edges[(node1_id, node2_id)] = path_edge
         self.edges[(node2_id, node1_id)] = path_edge
 
-@dataclass
+@dataclass(frozen=True)
 class ShelveStop:
     edge: PathEdge
     shelve_id: str
@@ -55,7 +57,7 @@ class ShelveStop:
 
 
 
-@dataclass
+@dataclass(frozen=True)
 class QueueNode:
     index: int  # leave node = 0
     distance_from_leave: float
@@ -84,3 +86,4 @@ class QueueLine:
 
     def __repr__(self): return "line"
 
+NodeLike = Union[PathNode,ShelveStop,QueueNode]
