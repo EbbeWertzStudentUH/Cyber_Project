@@ -1,24 +1,35 @@
 from dataclasses import dataclass
-from enum import Enum, auto
 from typing import Union
-from core.model.GraphModels import PathNode, PathEdge, ShelveStop, QueueLine, QueueNode
+from core.model.graph_models import PathNode, ShelveStop, QueueLine, QueueNode
 
-ModelElement = Union[PathNode,PathEdge,ShelveStop,QueueLine,QueueNode]
-class ModelElementType(Enum):
-    DRIVABLE_NODE = auto()
-    DRIVABLE_EDGE = auto()
-    SHELVE_STOP = auto()
-    QUEUE_LINE = auto()
-    QUEUE_STOP = auto()
+ModelElement = Union[PathNode,ShelveStop,QueueLine,QueueNode]
 
 @dataclass
 class Robot:
     id:str
-    previous_element_type: ModelElementType | None
-    current_element_type: ModelElementType
-    target_element_type: ModelElementType | None
-    previous_element: ModelElement | None
     current_element: ModelElement
-    target_element: ModelElement | None
-    is_idle: bool
-    has_package: bool
+    previous_element: ModelElement | None = None
+    target_element: ModelElement | None = None
+    is_idle: bool = True
+    has_product: bool = False
+    product_id: str | None = None
+
+    def target_arrive(self):
+        self._update_previous_element()
+        self._update_current_element()
+        self.target_element = None
+        self.is_idle = True
+
+    def goto_element_from_idle(self, current_element: ModelElement, target_element: ModelElement):
+        if self.target_element or not self.is_idle:
+            raise RuntimeError("robot must be idle before being assigned a new movement task")
+        self._update_previous_element()
+        self.current_element = current_element
+        self.target_element = target_element
+        self.is_idle = False
+
+    def _update_previous_element(self):
+        self.previous_element = self.current_element
+
+    def _update_current_element(self):
+        self.current_element = self.target_element
