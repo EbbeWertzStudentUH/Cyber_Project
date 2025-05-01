@@ -1,10 +1,10 @@
 import math
 from typing import List
 
-from core.GraphModels import PathNode, PathGraph, PathEdge, ShelveStop, QueueNode, QueueLine
-from core.WarehouseModel import WarehouseModel
+from core.model.graph_models import PathNode, PathGraph, PathEdge, ShelveStop, QueueNode, QueueLine
+from core.model.WarehouseModel import WarehouseModel
 from svg.SvgExtractor import SVGExtractor
-from svg.SvgModels import SvgRgbMatch, SvgCircle, SvgLineSegment, SvgText, SvgRectangle
+from svg.svg_models import SvgRgbMatch, SvgCircle, SvgLineSegment, SvgText, SvgRectangle
 
 
 class SvgToModelBuilder:

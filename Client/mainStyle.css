@@ -1,0 +1,118 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+h1 {
+  color: #4A90E2;
+  margin-bottom: 20px;
+}
+
+#svgContainer svg {
+  max-height: 40vh;
+  height: auto;
+  width: auto;
+  max-width: 100%;
+}
+
+#svgContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f8ff;
+  border: 2px dashed #4A90E2;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: auto;
+}
+
+a {
+  display: inline-block;
+  margin-top: 30px;
+  background-color: #4A90E2;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+a:hover {
+  background-color: #357ABD;
+}
+
+/* Queue section */
+#queueList {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+  text-align: left;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+#queueList li {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+#queueList li:last-child {
+  border-bottom: none;
+}
+
+/* Form styling */
+form#queueForm {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+form#queueForm input[type="text"],
+form#queueForm input[type="number"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 200px;
+}
+
+form#queueForm button {
+  padding: 10px 20px;
+  background-color: #4A90E2;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+form#queueForm button:hover {
+  background-color: #357ABD;
+}
+
+/* Status message */
+#queueMessage {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #2d8f4e;
+}

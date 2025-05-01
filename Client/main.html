@@ -1,90 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>View SVG Dashboard</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Poppins', sans-serif;
-        background-color: #f4f6f8;
-        color: #333;
-      }
-  
-      .container {
-        max-width: 800px;
-        margin: 50px auto;
-        background: #fff;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        text-align: center;
-      }
-  
-      h1 {
-        color: #4A90E2;
-        margin-bottom: 20px;
-      }
-  
-      #svgContainer {
-        min-height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f0f8ff;
-        border: 2px dashed #4A90E2;
-        border-radius: 8px;
-        padding: 20px;
-        overflow: auto;
-      }
-  
-      a {
-        display: inline-block;
-        margin-top: 30px;
-        background-color: #4A90E2;
-        color: #fff;
-        text-decoration: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: bold;
-        transition: background 0.3s;
-      }
-  
-      a:hover {
-        background-color: #357ABD;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="mainStyle.css">
+  <title>View SVG Dashboard</title>
+</head>
 <body>
-  <h1>Uploaded SVG</h1>
+  <h1>Robot planner</h1>
 
   <div id="svgContainer">
     Loading SVG...
   </div>
 
+  <hr>
+
+  <h2>Queue Items</h2>
+  <ul id="queueList">Loading queue...</ul>
+
+  <h3>Add to Queue</h3>
+  <form id="queueForm">
+    <input type="text" id="item" placeholder="Item" required>
+    <button type="submit">Add</button>
+  </form>
+
+  <div id="queueMessage"></div>
+
   <br>
   <a href="http://127.0.0.1:5500/Client/upload.html">Upload another SVG</a>
 
-  <script>
-    async function loadSVG() {
-      console.log("reload")
-      try {
-        const response = await fetch('http://127.0.0.1:8080/api/svg');
-        if (!response.ok) {
-          document.getElementById('svgContainer').textContent = "Failed to load SVG.";
-          return;
-        }
-        
-        const svgText = await response.text();
-        document.getElementById('svgContainer').innerHTML = svgText;
-      } catch (error) {
-        console.error(error);
-        document.getElementById('svgContainer').textContent = "Error loading SVG.";
-      }
-    }
-
-    setInterval(loadSVG, 500);
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>

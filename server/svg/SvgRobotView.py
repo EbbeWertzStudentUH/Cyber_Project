@@ -53,9 +53,8 @@ class SvgRobotView:
                 'fill': 'none',
                 'stroke': 'black',
                 'stroke-width': '0.1',
-                'transform': f'rotate({self.angle_deg})'
+                'transform': f'rotate({self.angle_deg + 90})'
             })
-
         return group
 
     def _create_semi_circle_path(self) -> str:

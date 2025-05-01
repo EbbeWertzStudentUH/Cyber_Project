@@ -5,10 +5,8 @@ from dataclasses import dataclass
 
 @dataclass
 class MovementCommand:
-    x_dir: float
-    y_dir: float
-    degree: float
-    speed: float
+    distance: float
+    angle: float
 
 @dataclass
 class PanicSignal:

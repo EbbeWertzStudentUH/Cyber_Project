@@ -954,13 +954,13 @@ DEF OMNI_WHEELS_4 Robot {
       name "color_sensor"
     }
     Lidar {
-      translation 0 0 0.01
-      rotation 0 1 0 -1.57
+      translation 0 0 0.12
+      # rotation 0 1 0 -1.57
       name "lidar"
-      fieldOfView 3.14
+      fieldOfView 6.28
       horizontalResolution 512
+      verticalFieldOfView 0.2
       numberOfLayers 3
-      type "spherical"
     }
     DEF BODY_TRANS Pose {
       translation 0 0 0.04
