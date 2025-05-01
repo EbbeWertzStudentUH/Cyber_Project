@@ -21,6 +21,7 @@ class RobotCommander:
         self.on_move_arrive = None
         self.on_pickup = None
         self.on_drop_off = None
+        self.on_any = None
 
     def connect(self):
         self.mqtt_client.connect(self.broker_url, self.broker_port, 60)
@@ -79,3 +80,4 @@ class RobotCommander:
             case "robots/drop_off":
                 drop_off = from_dict(DropOffResponse, payload_dict)
                 self.on_drop_off(drop_off)
+        self.on_any()

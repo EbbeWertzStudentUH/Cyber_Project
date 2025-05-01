@@ -82,6 +82,7 @@ async def add_queue_item(request: Request):
 
         model = CORE_SINGLETON.model
         model.add_product_to_queue(product_id)
+        CORE_SINGLETON.scheduler.update()
         
         return {"message": f"Item added to queue"}
     except ValueError as e:

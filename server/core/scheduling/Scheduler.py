@@ -19,6 +19,7 @@ class Scheduler:
         commander.on_move_arrive = self.handle_move_arrive
         commander.on_pickup = self.handle_pickup
         commander.on_drop_off = self.handle_drop_off
+        commander.on_any = self.update
 
     def update(self):
         self.queue_manager.update()
