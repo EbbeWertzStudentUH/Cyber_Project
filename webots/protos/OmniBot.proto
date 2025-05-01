@@ -983,6 +983,7 @@ DEF OMNI_WHEELS_4 Robot {
   physics Physics {
   }
   controller IS controller
+  name IS name
   supervisor IS supervisor
 }
 

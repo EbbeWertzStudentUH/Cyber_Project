@@ -13,7 +13,8 @@ from command_types import MovementCommand, PanicResponse, MoveArriveResponse, Pi
 TIME_STEP = 32
 robot = Robot()
 kinematic = RobotKinematic.getInstance()
-robot_id = "robot_1"
+robot_id = robot.getName()
+print(f"Controller started for robot {robot_id}")
 broker = "localhost"
 port = 1883
 
@@ -209,11 +210,16 @@ def on_message(client, userdata, msg):
                 "dropping_time": dropping_time
             }))
 
-mqtt_client = mqtt.Client(client_id=robot_id)
+mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 mqtt_client.connect(broker, port, 60)
-threading.Thread(target=mqtt_client.loop_forever, daemon=True).start()
+mqtt_client.loop_start() # loop start begint zelf al in een aparte thread
+# threading.Thread(target=mqtt_client.loop_forever, daemon=True).start()
+
+#test
+# rijdt(math.pi, 4.0)
+# rijdt(-math.pi/2, 1.0)
 
 # --- Main Loop ---
 while robot.step(TIME_STEP) != -1:
