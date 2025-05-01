@@ -40,7 +40,7 @@ class RobotCommander:
 
     def connect(self):
         self.mqtt_client.connect(self.broker_url, self.broker_port, 60)
-        self.mqtt_client.loop_forever()
+        self.mqtt_client.loop_start() # loop start runs in seperate thread unlike loop forever
 
     def disconnect(self):
         self.mqtt_client.disconnect()

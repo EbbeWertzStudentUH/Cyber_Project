@@ -86,6 +86,15 @@ async def add_queue_item(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to add queue item: {str(e)}")
 
+@app.on_event("startup")
+async def startup_event():
+    CORE_SINGLETON.commander.connect()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    CORE_SINGLETON.commander.disconnect()
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
