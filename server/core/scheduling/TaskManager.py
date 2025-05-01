@@ -33,9 +33,12 @@ class TaskManager:
     def assign_next_task(self, robot_id: str, task_element: ModelElement):
         robot = self.model.robots[robot_id]
 
+        if not robot.is_idle: return
+
         if isinstance(robot.current_element, ShelveStop) and not robot.has_product:
             self.commander.command_pickup(robot.id, robot.product_id)
             robot.has_product = True
+            return
 
         start_coord = self._node_coordinate(robot.current_element)
         end_coord = self._node_coordinate(task_element)
