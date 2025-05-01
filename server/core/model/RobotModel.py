@@ -10,7 +10,7 @@ class Robot:
     current_element: ModelElement
     previous_element: ModelElement | None = None
     target_element: ModelElement | None = None
-    is_idle: bool = True
+    is_ready: bool = True
     has_product: bool = False
     product_id: str | None = None
 
@@ -18,15 +18,15 @@ class Robot:
         self._update_previous_element()
         self._update_current_element()
         self.target_element = None
-        self.is_idle = True
+        self.is_ready = True
 
-    def goto_element_from_idle(self, current_element: ModelElement, target_element: ModelElement):
-        if self.target_element or not self.is_idle:
+    def goto_element_from_ready(self, current_element: ModelElement, target_element: ModelElement):
+        if self.target_element or not self.is_ready:
             raise RuntimeError("robot must be idle before being assigned a new movement task")
         self._update_previous_element()
         self.current_element = current_element
         self.target_element = target_element
-        self.is_idle = False
+        self.is_ready = False
 
     def _update_previous_element(self):
         self.previous_element = self.current_element

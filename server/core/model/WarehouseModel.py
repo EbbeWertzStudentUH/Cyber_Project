@@ -10,6 +10,10 @@ class WarehouseModel:
         self.robots = dict[str, Robot]()
         self.product_queue = list[str]() # product = shelve id
 
+
+    def get_ready_robots(self):
+        return [r for r in self.robots.values() if r.is_ready]
+
     def get_queue_size(self):
         return len(self.queue_line.queue_nodes)
 

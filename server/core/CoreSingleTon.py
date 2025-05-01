@@ -20,17 +20,15 @@ class CoreSingleTon:
 
         # ================
         # SIMULATION: scheduled robots arrive 2 seconds after assignment
-        for robot in self.model.robots.values():
-            if robot.is_idle:
-                self.simulated_robot_times[robot.id] = time.time()
-            elif time.time() - self.simulated_robot_times[robot.id] > 1:
-                self.scheduler.register_robot_arrival(robot.id)
-                self.simulated_robot_times[robot.id] = time.time()
-
-        #
+        # for robot in self.model.robots.values():
+        #     if robot.is_ready:
+        #         self.simulated_robot_times[robot.id] = time.time()
+        #     elif time.time() - self.simulated_robot_times[robot.id] > 1:
+        #         self.scheduler.register_robot_arrival(robot.id)
+        #         self.simulated_robot_times[robot.id] = time.time()
+        # self.scheduler.update()
         # ================
 
-        self.scheduler.update()
         self.renderer.update_model(self.model)
 
     def init_svg_renderer(self, original_svg: bytes):
