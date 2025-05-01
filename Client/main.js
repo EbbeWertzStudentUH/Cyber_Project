@@ -28,13 +28,12 @@ async function loadQueue() {
 document.getElementById('queueForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const item = document.getElementById('item').value;
-  const position = document.getElementById('position').value;
 
   try {
     const response = await fetch('http://127.0.0.1:8080/api/add_queue_item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ item, position })
+      body: JSON.stringify({ "product_id": item })
     });
 
     const result = await response.json();
