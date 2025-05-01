@@ -61,6 +61,6 @@ class QueueManager:
         start_coord = start_node.coordinate(self.model.queue_line)
         end_coord = target_node.coordinate(self.model.queue_line)
 
-        self.commander.calculate_and_command_move(robot.id, start_coord, end_coord)
+        self.commander.calculate_and_command_move(robot.id, start_coord, end_coord, False)
 
         robot.goto_element_from_idle(self.model.queue_line, target_node)

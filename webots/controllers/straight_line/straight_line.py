@@ -1,3 +1,4 @@
+from dacite import from_dict
 from controller import Robot, Camera
 from kinematic import RobotKinematic
 import math
@@ -166,49 +167,46 @@ def rijdt(richting_rad, afstand):
 # --- MQTT Client Logica ---
 def on_connect(client, _1, _2, rc):
     print(f"Server connected with result code {rc}")
+    client.subscribe(f"robots/{robot_id}/pickup")
+    client.subscribe(f"robots/{robot_id}/drop_off")
+    client.subscribe(f"robots/{robot_id}/move")
     client.subscribe("robots/panic")
-    client.subscribe("robots/move_arrive")
-    client.subscribe("robots/pickup")
-    client.subscribe("robots/drop_off")
 
 def on_message(client, userdata, msg):
-    payload_dict = to_json(msg.payload.decode())
+    payload_json = msg.payload.decode()
     topic = msg.topic
-    match topic:
-        case "robots/move":
-            move = from_json(MovementCommand, payload_dict)
-            startTime = robot.getTime()
-            rijdt(move.angle, move.distance)
-            driving_time = robot.getTime() - startTime
-            if move.correct_centering:
-                zoek_en_centreer_op_bol()
-            correction = robot.getTime() - driving_time > 0.1
-            mqtt_client.publish(f"robots/{robot_id}/move_arrive", json.dumps({
-                "robot_id": robot_id,
-                "success": True,
-                "driving_time": driving_time,
-                "correction": correction
-            }))
-        case "robots/pickup":
-            arrive = from_json(PickupCommand, payload_dict)
-            startTime = robot.getTime()
-            pickup()
-            picking_time = robot.getTime() - startTime
-            mqtt_client.publish(f"robots/{robot_id}/pickup_ok", json.dumps({
-                "robot_id": robot_id,
-                "success": True,
-                "picking_time": picking_time
-            }))
-        case "robots/drop_off":
-            pickup = from_json(PickupResponse, payload_dict)
-            startTime = robot.getTime()
-            drop_off()
-            dropping_time = robot.getTime() - startTime
-            mqtt_client.publish(f"robots/{robot_id}/drop_off_ok", json.dumps({
-                "robot_id": robot_id,
-                "success": True,
-                "dropping_time": dropping_time
-            }))
+    print(f"robot {robot_id} got message from topic: {topic} -> {payload_json}")
+    if topic == f"robots/{robot_id}/move":
+        move_dict = from_json(payload_json)
+        move = from_dict(MovementCommand, move_dict)
+        startTime = robot.getTime()
+        rijdt(math.radians(move.angle), move.distance)
+        driving_time = robot.getTime() - startTime
+        if move.correct_centering:
+            zoek_en_centreer_op_bol()
+        mqtt_client.publish(f"robots/move_arrive", json.dumps({
+            "robot_id": robot_id,
+            "success": True,
+            "driving_time": driving_time,
+        }))
+    elif topic == f"robots/{robot_id}/pickup":            
+        startTime = robot.getTime()
+        pickup()
+        picking_time = robot.getTime() - startTime
+        mqtt_client.publish(f"robots/pickup", json.dumps({
+            "robot_id": robot_id,
+            "success": True,
+            "picking_time": picking_time
+        }))
+    elif topic == f"robots/{robot_id}/drop_off":
+        startTime = robot.getTime()
+        drop_off()
+        dropping_time = robot.getTime() - startTime
+        mqtt_client.publish(f"robots/drop_off", json.dumps({
+            "robot_id": robot_id,
+            "success": True,
+            "dropping_time": dropping_time
+        }))
 
 mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect

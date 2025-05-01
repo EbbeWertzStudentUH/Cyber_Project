@@ -24,6 +24,9 @@ async def upload_svg(file: UploadFile = File(...)):
     CORE_SINGLETON.set_model(builder.build())
     CORE_SINGLETON.init_svg_renderer(svg_content)
 
+    for node in CORE_SINGLETON.model.queue_line.queue_nodes:
+        x, y = node.coordinate(CORE_SINGLETON.model.queue_line)
+        print(f"{x-10:.02f} {10-y:.02f}")
     return {"message": "SVG uploaded and processed successfully"}
 
 @app.get("/api/queu_lengt")

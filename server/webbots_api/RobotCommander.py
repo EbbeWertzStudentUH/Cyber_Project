@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 from dacite import from_dict
 from pydantic_core import from_json, to_json
 
+# from core.CoreSingleTon import CORE_SINGLETON
 from webbots_api.command_types import MovementCommand, PanicResponse, MoveArriveResponse, PickupResponse, \
     DropOffResponse, PickupCommand, DropOffCommand
 
@@ -24,9 +25,10 @@ def on_message(client, userdata, msg):
             print(f"PANIC: {panic}")
         case "robots/move_arrive":
             arrive = from_dict(MoveArriveResponse, payload_dict)
-        case "robots/pickup_ok":
+            # self.scheduler.register_robot_arrival(arrive.robot_id)
+        case "robots/pickup":
             pickup = from_dict(PickupResponse, payload_dict)
-        case "robots/drop_off_ok":
+        case "robots/drop_off":
             drop_off = from_dict(DropOffResponse, payload_dict)
 
 class RobotCommander:
@@ -46,6 +48,7 @@ class RobotCommander:
 
     def command_move(self, robot_id: str, command: MovementCommand):
         topic = f"robots/{robot_id}/move"
+        print(f"moving {robot_id}")
         payload = to_json(command)
         self.mqtt_client.publish(topic, payload)
 
@@ -59,11 +62,11 @@ class RobotCommander:
         payload = to_json(DropOffCommand(product_id))
         self.mqtt_client.publish(topic, payload)
 
-    def calculate_and_command_move(self, robot_id:str, start_coord:tuple[float, float], end_coord:tuple[float, float]):
+    def calculate_and_command_move(self, robot_id:str, start_coord:tuple[float, float], end_coord:tuple[float, float], correct:bool):
         start_x, start_y = start_coord
         end_x, end_y = end_coord
         dx, dy = end_x - start_x, end_y - start_y
         distance = math.hypot(dx, dy)
-        angle = math.degrees(math.atan2(dy, dx)) % 360
-        move_command = MovementCommand(distance=distance, angle=angle)
+        angle = math.degrees(math.atan2(-dy, dx)) % 360
+        move_command = MovementCommand(distance=distance, angle=angle, correct_centering=correct)
         self.command_move(robot_id, move_command)

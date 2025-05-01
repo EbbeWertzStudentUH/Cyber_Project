@@ -42,7 +42,7 @@ class TaskManager:
 
         start_coord = self._node_coordinate(robot.current_element)
         end_coord = self._node_coordinate(task_element)
-        self.commander.calculate_and_command_move(robot_id, start_coord, end_coord)
+        self.commander.calculate_and_command_move(robot_id, start_coord, end_coord, True)
         robot.goto_element_from_idle(None, task_element)
 
 
