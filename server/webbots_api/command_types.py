@@ -8,6 +8,14 @@ class MovementCommand:
     angle: float
     correct_centering: bool
 
+@dataclass
+class PickupCommand:
+    product_id: str
+
+@dataclass
+class DropOffCommand:
+    product_id: str
+
 # INCOMING
 @dataclass
 class PanicResponse:

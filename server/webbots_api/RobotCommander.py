@@ -1,10 +1,11 @@
-import json
 import math
+
 import paho.mqtt.client as mqtt
 from dacite import from_dict
+from pydantic_core import from_json, to_json
 
 from webbots_api.command_types import MovementCommand, PanicResponse, MoveArriveResponse, PickupResponse, \
-    DropOffResponse
+    DropOffResponse, PickupCommand, DropOffCommand
 
 
 def on_connect(client, _1, _2, rc):
@@ -15,19 +16,19 @@ def on_connect(client, _1, _2, rc):
     client.subscribe("robots/drop_off")
 
 def on_message(client, userdata, msg):
-    payload = json.loads(msg.payload.decode())
+    payload_dict = from_json(msg.payload.decode())
     topic = msg.topic
     match topic:
         case "robots/panic":
-            panic = from_dict(PanicResponse, payload)
+            panic = from_dict(PanicResponse, payload_dict)
             print(f"PANIC: {panic}")
         case "robots/move_arrive":
-            arrive = from_dict(MoveArriveResponse, payload)
+            arrive = from_dict(MoveArriveResponse, payload_dict)
 
         case "robots/pickup_ok":
-            pickup = from_dict(PickupResponse, payload)
+            pickup = from_dict(PickupResponse, payload_dict)
         case "robots/drop_off_ok":
-            drop_off = from_dict(DropOffResponse, payload)
+            drop_off = from_dict(DropOffResponse, payload_dict)
 
 class RobotCommander:
     def __init__(self, broker_url="localhost", broker_port=1883):
@@ -46,17 +47,17 @@ class RobotCommander:
 
     def command_move(self, robot_id: str, command: MovementCommand):
         topic = f"robots/{robot_id}/move"
-        payload = json.dumps(command.__dict__)
+        payload = to_json(command)
         self.mqtt_client.publish(topic, payload)
 
     def command_pickup(self, robit_id:str, product_id:str):
         topic = f"robots/{robit_id}/pickup"
-        payload = json.dumps({"product_id": product_id})
+        payload = to_json(PickupCommand(product_id))
         self.mqtt_client.publish(topic, payload)
 
     def command_drop_off(self, robit_id:str, product_id:str):
         topic = f"robots/{robit_id}/drop_off"
-        payload = json.dumps({"product_id": product_id})
+        payload = to_json(DropOffCommand(product_id))
         self.mqtt_client.publish(topic, payload)
 
     def calculate_and_command_move(self, robot_id:str, start_coord:tuple[float, float], end_coord:tuple[float, float]):
