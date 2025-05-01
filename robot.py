@@ -3,16 +3,43 @@ import json
 import paho.mqtt.client as mqtt
 from dataclasses import dataclass
 
+# OUTGOING:
 @dataclass
 class MovementCommand:
     distance: float
     angle: float
+    correct_centering: bool
 
+# INCOMING
 @dataclass
-class PanicSignal:
+class PanicResponse:
     robot_id: str
     reason: str
     timestamp: str
+
+@dataclass
+class MoveCorrection:
+    x_correct: float
+    y_correct: float
+
+@dataclass
+class MoveArriveResponse:
+    robot_id: str
+    success: bool
+    driving_time: float
+    correction: MoveCorrection | None
+
+@dataclass
+class PickupResponse:
+    robot_id: str
+    success: bool
+    picking_time: float
+
+@dataclass
+class DropOffResponse:
+    robot_id: str
+    success: bool
+    dropping_time: float
 
 broker = "localhost"
 port = 1883
@@ -33,8 +60,7 @@ def on_message(client, userdata, msg):
 def send_panic(reason: str):
     client = mqtt.Client()
     client.connect(broker, port, 60)
-    
-    panic = PanicSignal(robot_id=robot_id, reason=reason, timestamp=datetime.utcnow().isoformat())
+    panic = PanicResponse(robot_id=robot_id, reason=reason, timestamp=datetime.utcnow().isoformat())
     payload = json.dumps(panic.__dict__)
     
     topic = f"robots/{robot_id}/panic"

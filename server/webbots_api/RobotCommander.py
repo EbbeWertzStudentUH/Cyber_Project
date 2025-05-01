@@ -24,7 +24,6 @@ def on_message(client, userdata, msg):
             print(f"PANIC: {panic}")
         case "robots/move_arrive":
             arrive = from_dict(MoveArriveResponse, payload_dict)
-
         case "robots/pickup_ok":
             pickup = from_dict(PickupResponse, payload_dict)
         case "robots/drop_off_ok":
