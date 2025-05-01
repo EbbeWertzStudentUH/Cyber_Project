@@ -170,20 +170,21 @@ Clock {
   rotation 0 0 1 3.14159
 }
 Omnibot {
+  name "robot_1"
   translation 0 0 0
   controller "straight_line"
 }
+Omnibot {
+  name "robot_2"
+  translation 1 0 0
+  controller "straight_line2"
+}
+Omnibot {
+  name "robot_3"
+  translation 2 0 0
+  controller "straight_line3"
+}
 
-#Omnibot {
-#  translation 1 0 0
-#  controller "straight_line"
-#}
-#
-#Omnibot {
-#  translation 2 0 0
-#  controller "straight_line"
-#}
-#
 # Witte bolletjes
 Solid {
   translation -0.022 -1.471 0

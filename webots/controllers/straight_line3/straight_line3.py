@@ -13,7 +13,7 @@ from command_types import MovementCommand, PanicResponse, MoveArriveResponse, Pi
 TIME_STEP = 32
 robot = Robot()
 kinematic = RobotKinematic.getInstance()
-robot_id = "robot_1"
+robot_id = "robot_3"
 broker = "localhost"
 port = 1883
 

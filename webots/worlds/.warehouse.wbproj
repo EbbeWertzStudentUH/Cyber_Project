@@ -6,7 +6,7 @@ maximizedDockId: -1
 centralWidgetVisible: 1
 projectionMode: ORTHOGRAPHIC
 orthographicViewHeight: 8.26662
-textFiles: 1 "controllers/straight_line/straight_line.py" "worlds/warehouse.wbt" "protos/OmniBot.proto"
+textFiles: 0 "worlds/warehouse.wbt" "protos/OmniBot.proto"
 globalOptionalRendering: LidarPointClouds
 consoles: Console:All:All
 renderingDevicePerspectives: robot_omni:color_sensor;0;1;0;0
