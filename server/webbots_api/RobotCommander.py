@@ -1,26 +1,45 @@
 import json
 import math
-
 import paho.mqtt.client as mqtt
-from webbots_api.command_types import MovementCommand, PanicSignal
+from dacite import from_dict
+
+from webbots_api.command_types import MovementCommand, PanicResponse, MoveArriveResponse, PickupResponse, \
+    DropOffResponse
+
 
 def on_connect(client, _1, _2, rc):
     print(f"Server connected with result code {rc}")
-    client.subscribe("robots/+/panic")
+    client.subscribe("robots/panic")
+    client.subscribe("robots/move_arrive")
+    client.subscribe("robots/pickup")
+    client.subscribe("robots/drop_off")
 
-def on_message(_0, _1, msg):
-    print(f"Panic message received on topic {msg.topic}")
+def on_message(client, userdata, msg):
     payload = json.loads(msg.payload.decode())
-    panic = PanicSignal(**payload)
-    print(f"PANIC ALERT from {panic.robot_id} at {panic.timestamp}: {panic.reason}")
+    topic = msg.topic
+    match topic:
+        case "robots/panic":
+            panic = from_dict(PanicResponse, payload)
+            print(f"PANIC: {panic}")
+        case "robots/move_arrive":
+            arrive = from_dict(MoveArriveResponse, payload)
+
+        case "robots/pickup_ok":
+            pickup = from_dict(PickupResponse, payload)
+        case "robots/drop_off_ok":
+            drop_off = from_dict(DropOffResponse, payload)
 
 class RobotCommander:
     def __init__(self, broker_url="localhost", broker_port=1883):
         self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = on_connect
         self.mqtt_client.on_message = on_message
-        # self.mqtt_client.connect(broker_url, broker_port, 60)
-        # self.mqtt_client.loop_forever()
+        self.broker_url = broker_url
+        self.broker_port = broker_port
+
+    def connect(self):
+        self.mqtt_client.connect(self.broker_url, self.broker_port, 60)
+        self.mqtt_client.loop_forever()
 
     def disconnect(self):
         self.mqtt_client.disconnect()
