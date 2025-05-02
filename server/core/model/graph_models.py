@@ -28,6 +28,12 @@ class PathGraph:
         self.edges[(node1_id, node2_id)] = path_edge
         self.edges[(node2_id, node1_id)] = path_edge
 
+    def get_neighbors(self, node_id: int) -> list[int]:
+        return [n2 if n1 == node_id else n1
+                for (n1, n2) in self.edges
+                if node_id in (n1, n2)]
+
+
 @dataclass(frozen=True)
 class ShelveStop:
     edge: PathEdge

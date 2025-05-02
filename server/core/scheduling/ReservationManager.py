@@ -59,5 +59,9 @@ class ReservationManager:
     def is_reserved(self, node_id: int) -> bool:
         return node_id in self.node_reservations
 
+    def get_reserving_robot(self, node_id: int) -> str | None:
+        return self.node_reservations.get(node_id)
+
+
 
 
