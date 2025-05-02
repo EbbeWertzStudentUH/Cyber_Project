@@ -101,6 +101,8 @@ class Scheduler:
 
         if self.reserver.try_reserve(dodge_robot.id, dodge_target_id):
             self.task_manager.assign_next_task(dodge_robot.id, dodge_target)
+            # Re-insert the conflict node back into task queue (so robot will go to it after dodge)
+            self.task_manager.prepend_task(dodge_robot.id, target_node)
             print(f"🤖 Robot {dodge_robot.id} dodges to node {dodge_target_id} to let {passing_robot.id} pass.")
             return True
 
