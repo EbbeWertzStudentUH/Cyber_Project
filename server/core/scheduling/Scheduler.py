@@ -1,5 +1,6 @@
 from core.model.WarehouseModel import WarehouseModel
 from core.model.graph_models import QueueNode
+from core.scheduling.ChainPathManager import ChainPathManager
 from core.scheduling.PathPlanner import PathPlanner
 from core.scheduling.ReservationManager import ReservationManager
 from core.scheduling.RobotQueueManager import QueueManager
@@ -14,7 +15,8 @@ class Scheduler:
         self.path_planner = PathPlanner(model)
         self.queue_manager = QueueManager(model, commander)
         self.task_manager = TaskManager(model, self.path_planner, commander)
-        self.reserver = ReservationManager()
+        self.chain_manager = ChainPathManager(self.model.graph)
+        self.reserver = ReservationManager(self.chain_manager)
         commander.on_panic = self.handle_panic
         commander.on_move_arrive = self.handle_move_arrive
         commander.on_pickup = self.handle_pickup
