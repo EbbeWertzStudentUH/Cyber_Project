@@ -606,7 +606,7 @@ Solid {
         }
       }
       geometry Sphere {
-        radius 0.1
+        radius 0.02
       }
     }
   ]

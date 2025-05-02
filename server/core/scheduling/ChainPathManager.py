@@ -1,6 +1,4 @@
 from core.model.graph_models import PathGraph
-
-
 import networkx as nx
 
 class ChainPathManager:

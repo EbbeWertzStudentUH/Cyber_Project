@@ -47,4 +47,4 @@ document.getElementById('queueForm').addEventListener('submit', async (e) => {
 setInterval(() => {
   loadSVG();
   loadQueue();
-}, 2000);
+}, 500);

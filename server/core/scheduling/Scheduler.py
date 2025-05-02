@@ -1,5 +1,5 @@
 from core.model.WarehouseModel import WarehouseModel
-from core.model.graph_models import QueueNode
+from core.model.graph_models import QueueNode, PathNode
 from core.scheduling.ChainPathManager import ChainPathManager
 from core.scheduling.PathPlanner import PathPlanner
 from core.scheduling.ReservationManager import ReservationManager
@@ -34,17 +34,23 @@ class Scheduler:
 
         for robot in idle_bots:
             task_node = self.task_manager.get_next_task(robot.id)
-            if task_node and self.reserver.try_reserve(robot.id, task_node):
-                self.task_manager.assign_next_task(robot.id, task_node)
+            if task_node is None:
+                continue
+            if not (isinstance(task_node, PathNode) and self.reserver.try_reserve(robot.id, task_node.id)):
+                continue
+            self.task_manager.assign_next_task(robot.id, task_node)
 
 
-    def handle_panic(self, panic: PanicResponse):
-        pass
+    @staticmethod
+    def handle_panic(panic: PanicResponse):
+        print(f"⚠️panic: {panic}")
 
     def handle_move_arrive(self, arrive: MoveArriveResponse):
         robot = self.model.robots[arrive.robot_id]
+        to_release_node = robot.previous_element
         robot.target_arrive()
-        self.reserver.release(arrive.robot_id)
+        if isinstance(to_release_node, PathNode):
+            self.reserver.release_chain_or_node(robot.id, to_release_node.id)
 
     def handle_pickup(self, pickup: PickupResponse):
         robot = self.model.robots[pickup.robot_id]
