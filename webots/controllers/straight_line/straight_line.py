@@ -91,53 +91,67 @@ def drop_off():
         wheels[i].setVelocity(0.0)
 
 # Bol detecteren
-def draw_centroid_marker(x, y):
+def draw_centroid_marker(x, y, black_pixels):
     image = camera.getImage()
     image_ref = display.imageNew(image, Display.RGBA, camera.getWidth(), camera.getHeight())
     display.imagePaste(image_ref, 0, 0, False)
 
-    display.setColor(0xFF0000)  # Red color
-    adjusted_y = camera.getHeight() - y
-    display.fillOval(int(x - 5), int(adjusted_y - 5), 10, 10)
+    # Draw detected black pixels (e.g., white)
+    display.setColor(0x00FFFF)  # White
+    for px, py in black_pixels:
+        display.drawPixel(px, int(py))
+
+    # Draw the centroid (e.g., red)
+    display.setColor(0xFF0000)  # Red
+    display.fillOval(int(x - 2), int(y - 2), 4, 4)
+
 def detect_black_position():
     width = camera.getWidth()
     height = camera.getHeight()
     image = camera.getImage()
-    
-    # Store black pixels coordinates
+
+    # Center and radius of the usable circle view (corners of camera view have wheel shadows)
+    center_x = width / 2
+    center_y = height / 2
+    radius = min(width, height) / 2 - 3  # 3 pixels of padding
+
     black_pixels = []
 
     for y in range(height):
         for x in range(width):
+            dx = x - center_x
+            dy = y - center_y
+            distance_squared = dx**2 + dy**2
+
+            # Skip pixels outside the central circle
+            if distance_squared > radius**2:
+                continue
+
             r = Camera.imageGetRed(image, width, x, y)
             g = Camera.imageGetGreen(image, width, x, y)
             b = Camera.imageGetBlue(image, width, x, y)
 
-            # Detect black pixels (threshold is quite low for black)
             if r < 10 and g < 10 and b < 10:
                 black_pixels.append((x, y))
 
     if not black_pixels:
         return None
 
-    # Compute the centroid of the black pixels
     centroid_x = sum(x for x, y in black_pixels) / len(black_pixels)
     centroid_y = sum(y for x, y in black_pixels) / len(black_pixels)
-    draw_centroid_marker(centroid_x, centroid_y)
-    # Return error from the center of the camera
-    center_x = width / 2
-    center_y = height / 2
 
-    # Return the error in x and y from the camera center
+    draw_centroid_marker(centroid_x, centroid_y, black_pixels)
+
     error_x = centroid_x - center_x
     error_y = centroid_y - center_y
 
     return error_x, error_y
 
+
 def zoek_en_centreer_op_bol():
     k_p = 0.1
     max_speed = 0.05
-    tolerance = 0.03
+    tolerance = 0.75
 
     vx_done = False
     vy_done = False
@@ -208,17 +222,17 @@ def blijf_gwn_fcking_recht_rijden_stomme_physics(target_heading=goal_heading, k_
     print("Target heading reached. No more rotation.")
 
 def rijdt(richting_rad, afstand):
-    snelheid = 0.2
-    vx = snelheid * math.cos(richting_rad)
-    vy = snelheid * math.sin(richting_rad)
+    max_speed = 0.2
+    min_speed = 0.02
+    slow_down_radius = 0.4
+
+    vx_base = math.cos(richting_rad)
+    vy_base = math.sin(richting_rad)
 
     pos = kinematic.getPos()
     initial_pos = type(pos)(pos.x, pos.y, pos.theta)
 
-    # target_x = initial_pos.x + afstand * math.cos(richting_rad)
-    # target_y = initial_pos.y + afstand * math.sin(richting_rad)
-
-    tolerance = 0.2
+    tolerance = 0.01
 
     while True:
         if robot.step(TIME_STEP) == -1:
@@ -241,15 +255,23 @@ def rijdt(richting_rad, afstand):
         dx = current_pos.x - initial_pos.x
         dy = current_pos.y - initial_pos.y
         distance_travelled = math.sqrt(dx**2 + dy**2)
+        remaining_distance = afstand - distance_travelled
 
-        if distance_travelled >= afstand - tolerance:
+        if remaining_distance <= tolerance:
             break
+
+        # Ease out speed factor: linear drop-off
+        speed_factor = min(1.0, remaining_distance / slow_down_radius)
+        speed = min_speed + (max_speed - min_speed) * speed_factor
+
+        vx = speed * vx_base
+        vy = speed * vy_base
 
         set_wheel_speeds(vx, vy, 0.0, kinematic)
 
-    for i in range(4):
-        wheels[i].setVelocity(0.0)
-        
+    for wheel in wheels:
+        wheel.setVelocity(0.0)
+
     blijf_gwn_fcking_recht_rijden_stomme_physics()
 
 
@@ -303,7 +325,7 @@ mqtt_client.on_message = on_message
 mqtt_client.connect(broker, port, 60)
 mqtt_client.loop_start() # loop start begint zelf al in een aparte thread
 # threading.Thread(target=mqtt_client.loop_forever, daemon=True).start()
-
+# zoek_en_centreer_op_bol()
 #test
 # rijdt(math.pi, 4.0)
 # rijdt(-math.pi/2, 1.0)
