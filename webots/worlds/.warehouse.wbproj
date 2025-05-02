@@ -5,12 +5,12 @@ sceneTreePerspectives: 000000ff000000010000000300000022000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 projectionMode: ORTHOGRAPHIC
-orthographicViewHeight: 9.60354
+orthographicViewHeight: 4.32018
 textFiles: -1
 globalOptionalRendering: LidarPointClouds
 consoles: Console:All:All
 renderingDevicePerspectives: A:camera_display;1;1.75;0.000995024;0.517382
-renderingDevicePerspectives: A:color_sensor;1;1.80469;0;0
+renderingDevicePerspectives: A:color_sensor;0;1.80469;0;0
 renderingDevicePerspectives: B:camera_display;0;0.760938;0;0
 renderingDevicePerspectives: B:color_sensor;0;0.682813;0;0
 renderingDevicePerspectives: C:camera_display;0;0.63125;0.1875;0.169734

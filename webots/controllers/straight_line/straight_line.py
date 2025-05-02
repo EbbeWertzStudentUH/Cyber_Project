@@ -10,6 +10,10 @@ import threading
 from pydantic_core import from_json, to_json
 from command_types import MovementCommand, PanicResponse, MoveArriveResponse, PickupResponse, \
     DropOffResponse, PickupCommand, DropOffCommand
+    
+from queue import Queue
+task_queue = Queue()
+
 
 TIME_STEP = 16
 robot = Robot()
@@ -92,18 +96,33 @@ def drop_off():
 
 # Bol detecteren
 def draw_centroid_marker(x, y, black_pixels):
+    width = camera.getWidth()
+    height = camera.getHeight()
+
+    # Create a blank RGBA mask image
+    mask = bytearray([0] * (width * height * 4))  # RGBA = 4 channels
+
+    # Set blue pixels (or any color) at black pixel locations
+    for px, py in black_pixels:
+        i = (py * width + px) * 4
+        mask[i] = 0      # R
+        mask[i + 1] = 255  # G
+        mask[i + 2] = 255  # B
+        mask[i + 3] = 255  # A (fully opaque)
+
+    # Create a reference to the current camera image
     image = camera.getImage()
-    image_ref = display.imageNew(image, Display.RGBA, camera.getWidth(), camera.getHeight())
+    image_ref = display.imageNew(image, Display.RGBA, width, height)
     display.imagePaste(image_ref, 0, 0, False)
 
-    # Draw detected black pixels (e.g., white)
-    display.setColor(0x00FFFF)  # White
-    for px, py in black_pixels:
-        display.drawPixel(px, int(py))
+    # Create and paste the mask image
+    mask_ref = display.imageNew(bytes(mask), Display.RGBA, width, height)
+    display.imagePaste(mask_ref, 0, 0, True)  # Alpha blending ON
 
-    # Draw the centroid (e.g., red)
-    display.setColor(0xFF0000)  # Red
+    # Draw centroid marker (red dot)
+    display.setColor(0xFF0000)
     display.fillOval(int(x - 2), int(y - 2), 4, 4)
+
 
 def detect_black_position():
     width = camera.getWidth()
@@ -151,7 +170,7 @@ def detect_black_position():
 def zoek_en_centreer_op_bol():
     k_p = 0.1
     max_speed = 0.05
-    tolerance = 0.75
+    tolerance = 1
 
     vx_done = False
     vy_done = False
@@ -290,34 +309,12 @@ def on_message(client, userdata, msg):
     if topic == f"robots/{robot_id}/move":
         move_dict = from_json(payload_json)
         move = from_dict(MovementCommand, move_dict)
-        startTime = robot.getTime()
-        rijdt(math.radians(move.angle), move.distance)
-        driving_time = robot.getTime() - startTime
-        if move.correct_centering:
-            zoek_en_centreer_op_bol()
-        mqtt_client.publish(f"robots/move_arrive", json.dumps({
-            "robot_id": robot_id,
-            "success": True,
-            "driving_time": driving_time,
-        }))
-    elif topic == f"robots/{robot_id}/pickup":            
-        startTime = robot.getTime()
-        pickup()
-        picking_time = robot.getTime() - startTime
-        mqtt_client.publish(f"robots/pickup", json.dumps({
-            "robot_id": robot_id,
-            "success": True,
-            "picking_time": picking_time
-        }))
+        task_queue.put(("move", move))
+    elif topic == f"robots/{robot_id}/pickup":
+        task_queue.put(("pickup", None))
     elif topic == f"robots/{robot_id}/drop_off":
-        startTime = robot.getTime()
-        drop_off()
-        dropping_time = robot.getTime() - startTime
-        mqtt_client.publish(f"robots/drop_off", json.dumps({
-            "robot_id": robot_id,
-            "success": True,
-            "dropping_time": dropping_time
-        }))
+        task_queue.put(("drop_off", None))
+
 
 mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
@@ -333,4 +330,37 @@ mqtt_client.loop_start() # loop start begint zelf al in een aparte thread
 # --- Main Loop ---
 while robot.step(TIME_STEP) != -1:
     kinematic.updateOdometry()
-    # De robot wacht op MQTT-opdrachten
+
+    if not task_queue.empty():
+        task_type, data = task_queue.get()
+        if task_type == "move":
+            move = data
+            startTime = robot.getTime()
+            rijdt(math.radians(move.angle), move.distance)
+            driving_time = robot.getTime() - startTime
+            if move.correct_centering:
+                zoek_en_centreer_op_bol()
+            mqtt_client.publish("robots/move_arrive", json.dumps({
+                "robot_id": robot_id,
+                "success": True,
+                "driving_time": driving_time
+            }))
+        elif task_type == "pickup":
+            startTime = robot.getTime()
+            pickup()
+            picking_time = robot.getTime() - startTime
+            mqtt_client.publish("robots/pickup", json.dumps({
+                "robot_id": robot_id,
+                "success": True,
+                "picking_time": picking_time
+            }))
+        elif task_type == "drop_off":
+            startTime = robot.getTime()
+            drop_off()
+            dropping_time = robot.getTime() - startTime
+            mqtt_client.publish("robots/drop_off", json.dumps({
+                "robot_id": robot_id,
+                "success": True,
+                "dropping_time": dropping_time
+            }))
+
