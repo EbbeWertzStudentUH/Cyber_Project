@@ -16,6 +16,7 @@ class CoreSingleTon:
     def set_model(self, model: WarehouseModel):
         self.model = model
         self.scheduler = Scheduler(model, self.commander)
+
     def update_view(self):
 
         # ================
@@ -29,7 +30,7 @@ class CoreSingleTon:
         # self.scheduler.update()
         # ================
 
-        self.renderer.update_model(self.model)
+        self.renderer.update_model(self.model, self.scheduler.reserver.node_reservations.keys())
 
     def init_svg_renderer(self, original_svg: bytes):
         self.renderer = SvgRenderer(original_svg)

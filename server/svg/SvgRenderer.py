@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from core.model.graph_models import PathNode, ShelveStop, QueueNode, QueueLine
 from core.model.RobotModel import Robot, ModelElement
 from core.model.WarehouseModel import WarehouseModel
+from core.scheduling.ReservationManager import ReservationManager
 from svg.SvgRobotView import SvgRobotView
 
 
@@ -16,15 +17,20 @@ class SvgRenderer:
         self.original_tree = ET.ElementTree(ET.fromstring(base_svg_content))
         self.root = copy.deepcopy(self.original_tree.getroot())
         self.model:WarehouseModel|None = None
+        self.reserved_node_ids = []
 
-    def update_model(self, model:WarehouseModel):
+    def update_model(self, model:WarehouseModel, reserved_nodes):
         self.model = model
+        self.reserved_node_ids = reserved_nodes
 
     def to_svg(self):
         self.root = copy.deepcopy(self.original_tree.getroot())
         if self.model:
             for robot in self.model.robots.values():
                 self.draw_robot(robot)
+            for path_node in self.model.graph.nodes.values():
+                if path_node.id in self.reserved_node_ids:
+                    self.create_circle(path_node.x, path_node.y, 'cyan', self.root)
         return ET.tostring(self.root, encoding="utf-8", xml_declaration=True).decode('utf-8')
 
     def draw_robot(self, robot: Robot):
@@ -68,3 +74,13 @@ class SvgRenderer:
             return element.coordinate(self.model.queue_line)
         else:
             raise TypeError(f"A node-like element was expected, not: {type(element)}")
+
+    @staticmethod
+    def create_circle(x, y, color, root):
+        circle_attrib = {
+            'cx': str(x),
+            'cy': str(y),
+            'r': "0.2",
+            'style': f"fill:{color}; stroke:black; stroke-width:0.1"
+        }
+        ET.SubElement(root, 'circle', circle_attrib)
