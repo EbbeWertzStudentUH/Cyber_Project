@@ -75,22 +75,27 @@ def set_wheel_speeds(vx, vy, omega, kinematic):
         wheels[i].setVelocity(wheel_speeds[i])
         
 def pickup():
+    global hasPackage
     hasPackage = True
-    wait_time = 2.0
+    wait_time = 1.0
     start_time = robot.getTime()
     while robot.getTime() - start_time < wait_time:
         kinematic.updateOdometry()
         set_wheel_speeds(0.0, 0.0, 0.0, kinematic)
+        robot.step(TIME_STEP)  # <- Advance simulation time!
     for i in range(4):
         wheels[i].setVelocity(0.0)
 
+
 def drop_off():
+    global hasPackage
     hasPackage = False
-    wait_time = 2.0
+    wait_time = 1.0
     start_time = robot.getTime()
     while robot.getTime() - start_time < wait_time:
         kinematic.updateOdometry()
         set_wheel_speeds(0.0, 0.0, 0.0, kinematic)
+        robot.step(TIME_STEP)  # <- Advance simulation time!
     for i in range(4):
         wheels[i].setVelocity(0.0)
 
@@ -209,7 +214,7 @@ def zoek_en_centreer_op_bol():
 
         print(f"Centering step: vx={vx:.2f}, vy={vy:.2f}, error_x={error_x:.2f}, error_y={error_y:.2f}")
 
-        if vx_done and vy_done:
+        if (vx_done and vy_done) or (vx == 0.0 and vy == 0.0):
             break
 
         set_wheel_speeds(vx, vy, 0.0, kinematic)
@@ -229,16 +234,18 @@ def blijf_gwn_fcking_recht_rijden_stomme_physics(target_heading=goal_heading, k_
         error = ((target_heading - current_heading + math.pi) % (2 * math.pi)) - math.pi
         omega = k_p * error
         omega = max(min(omega, max_omega), -max_omega)
-        print(f"[Orientation Correction] Current Heading: {math.degrees(current_heading):.2f}°, Error: {math.degrees(error):.2f}°, Omega: {omega:.3f}")
 
         if abs(error) < tolerance:
             set_wheel_speeds(0.0, 0.0, omega, kinematic)
             break
         
+        print(f"[Orientation Correction] Current Heading: {math.degrees(current_heading):.2f}°, Error: {math.degrees(error):.2f}°, Omega: {omega:.3f}")
+
+        
         set_wheel_speeds(0.0, 0.0, omega, kinematic)
         robot.step(TIME_STEP)
     
-    print("Target heading reached. No more rotation.")
+    # print("Target heading reached. No more rotation.")
 
 def rijdt(richting_rad, afstand):
     max_speed = 0.2
@@ -291,7 +298,6 @@ def rijdt(richting_rad, afstand):
     for wheel in wheels:
         wheel.setVelocity(0.0)
 
-    blijf_gwn_fcking_recht_rijden_stomme_physics()
 
 
 # --- MQTT Client Logica ---
@@ -330,7 +336,8 @@ mqtt_client.loop_start() # loop start begint zelf al in een aparte thread
 # --- Main Loop ---
 while robot.step(TIME_STEP) != -1:
     kinematic.updateOdometry()
-
+    blijf_gwn_fcking_recht_rijden_stomme_physics()
+    kinematic.updateOdometry()
     if not task_queue.empty():
         task_type, data = task_queue.get()
         if task_type == "move":

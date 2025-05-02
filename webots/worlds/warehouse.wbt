@@ -171,20 +171,20 @@ Clock {
 }
 Omnibot {
   name "A"
-  translation 6.870736999964723 8.31 0.057464745376310016
-  #rotation 0 0 1 1.57079632679
+  translation 6.870736999964723 8.306911978292824 0.057464745376310016
+  rotation 0 0 1 0.0
   controller "straight_line"
 }
 Omnibot {
   name "B"
-  translation 5.259124093674785 8.31 0.057464745376310016
-  #rotation 0 0 1 1.57079632679
+  translation 5.259124093674785 8.306362552983856 0.057464745376310016
+  rotation 0 0 1 0.0
   controller "straight_line"
 }
 Omnibot {
   name "C"
-  translation 3.6475124380434565 8.31 0.057464745376310016
-  #rotation 0 0 1 1.57079632679
+  translation 3.6475124380434565 8.305813128101256 0.057464745376310016
+  rotation 0 0 1 0.0
   controller "straight_line"
 }
 #Omnibot {

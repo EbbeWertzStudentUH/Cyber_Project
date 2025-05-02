@@ -41,7 +41,8 @@ class TaskManager:
 
         start_coord = self._node_coordinate(robot.current_element)
         end_coord = self._node_coordinate(task_element)
-        self.commander.calculate_and_command_move(robot_id, start_coord, end_coord, True)
+        center_correct = isinstance(task_element, PathNode)
+        self.commander.calculate_and_command_move(robot_id, start_coord, end_coord, center_correct)
         robot.goto_element_from_ready(None, task_element)
 
 
