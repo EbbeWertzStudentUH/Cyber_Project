@@ -14,24 +14,18 @@ class QueueManager:
         self.drop_off()
 
     def drop_off(self):
-        robots = self.model.robots.values()
+        robots = self.model.get_ready_robots()
         robots_on_stops = [r for r in robots if isinstance(r.current_element, QueueNode)]
         for r in robots_on_stops:
             if r.has_product:
                 self.commander.command_drop_off(r.id, r.product_id)
-                r.product_id = None
-                r.has_product = False
 
     def compact_queue(self):
         sorted_stops = sorted(self.model.queue_line.queue_nodes, key=lambda n: n.index)
 
-        robots = self.model.robots.values()
+        robots = self.model.get_ready_robots()
         robots_on_stops = [r for r in robots if isinstance(r.current_element, QueueNode)]
         robots_on_queue_line = [r for r in robots if  isinstance(r.current_element, QueueLine)]
-        for robot in robots_on_stops:
-            assert robot.is_idle
-        for robot in robots_on_queue_line:
-            assert (not robot.is_idle) and robot.target_element
 
         current_occupied = {r.current_element.index: r for r in robots_on_stops}
         arriving_soon = {r.target_element.index for r in robots_on_queue_line}
@@ -61,6 +55,6 @@ class QueueManager:
         start_coord = start_node.coordinate(self.model.queue_line)
         end_coord = target_node.coordinate(self.model.queue_line)
 
-        self.commander.calculate_and_command_move(robot.id, start_coord, end_coord)
+        self.commander.calculate_and_command_move(robot.id, start_coord, end_coord, False)
 
-        robot.goto_element_from_idle(self.model.queue_line, target_node)
+        robot.goto_element_from_ready(self.model.queue_line, target_node)

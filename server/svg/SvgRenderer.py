@@ -30,7 +30,7 @@ class SvgRenderer:
     def draw_robot(self, robot: Robot):
         robot_id = robot.id
         has_package = robot.has_product
-        is_idle = robot.is_idle
+        is_idle = robot.is_ready
 
         x, y = 0.0, 0.0
         angle = 0.0

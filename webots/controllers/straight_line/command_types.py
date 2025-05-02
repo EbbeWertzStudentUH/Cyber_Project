@@ -24,16 +24,10 @@ class PanicResponse:
     timestamp: str
 
 @dataclass
-class MoveCorrection:
-    x_correct: float
-    y_correct: float
-
-@dataclass
 class MoveArriveResponse:
     robot_id: str
     success: bool
     driving_time: float
-    correction: MoveCorrection | None
 
 @dataclass
 class PickupResponse:
