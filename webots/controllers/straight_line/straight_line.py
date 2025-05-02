@@ -1,5 +1,5 @@
 from dacite import from_dict
-from controller import Robot, Camera
+from controller import Robot, Camera, Display
 from kinematic import RobotKinematic
 import math
 import json
@@ -11,7 +11,7 @@ from pydantic_core import from_json, to_json
 from command_types import MovementCommand, PanicResponse, MoveArriveResponse, PickupResponse, \
     DropOffResponse, PickupCommand, DropOffCommand
 
-TIME_STEP = 32
+TIME_STEP = 16
 robot = Robot()
 kinematic = RobotKinematic.getInstance()
 robot_id = robot.getName()
@@ -21,10 +21,17 @@ port = 1883
 
 hasPackage = False
 
+inertial_unit = robot.getDevice("IMU")
+inertial_unit.enable(TIME_STEP)
+
+
 # Apparaten instellen
 lidar = robot.getDevice("lidar")
 lidar.enable(TIME_STEP)
 lidar.enablePointCloud()
+
+compass = robot.getDevice("compass")
+compass.enable(TIME_STEP)
 
 wheels = []
 for name in ["wheel1", "wheel2", "wheel3", "wheel4"]:
@@ -32,11 +39,31 @@ for name in ["wheel1", "wheel2", "wheel3", "wheel4"]:
     motor.setPosition(float('inf'))
     motor.setVelocity(0.0)
     wheels.append(motor)
+    
+
+    
+print("waiting for compass to work...")
+while robot.step(TIME_STEP) != -1:
+    compass_values = compass.getValues()
+    if not any(math.isnan(v) for v in compass_values):
+        break  # compass is now ready
+    
+compass_values = compass.getValues()
+print(f"Compass values: {compass_values}")
+kinpos = kinematic.getPos()
+print(f"Before compass: pos = x:{kinpos.x} y:{kinpos.y} t:{kinpos.theta}")
+
+# goal_heading = math.atan2(compass_values[0], compass_values[2]) # robot compass direction to keep correcting towards
+goal_heading = inertial_unit.getRollPitchYaw()[2]
 
 camera = robot.getDevice('color_sensor')
+
+display = robot.getDevice("camera_display")
+
+
 camera.enable(TIME_STEP)
 
-# Snelheden toepassen
+# Snelheden toepassen (en houdt de orientatie recht)
 def set_wheel_speeds(vx, vy, omega, kinematic):
     motion = kinematic.inversKinematic(vx, vy, omega)
     wheel_speeds = [motion.w1, motion.w2, motion.w3, motion.w4]
@@ -64,40 +91,66 @@ def drop_off():
         wheels[i].setVelocity(0.0)
 
 # Bol detecteren
-def detect_white_position():
+def draw_centroid_marker(x, y):
+    image = camera.getImage()
+    image_ref = display.imageNew(image, Display.RGBA, camera.getWidth(), camera.getHeight())
+    display.imagePaste(image_ref, 0, 0, False)
+
+    display.setColor(0xFF0000)  # Red color
+    adjusted_y = camera.getHeight() - y
+    display.fillOval(int(x - 5), int(adjusted_y - 5), 10, 10)
+def detect_black_position():
     width = camera.getWidth()
     height = camera.getHeight()
     image = camera.getImage()
-    white_pixels = []
+    
+    # Store black pixels coordinates
+    black_pixels = []
 
     for y in range(height):
         for x in range(width):
-            if not (width * 0.15 <= x <= width * 0.85 and height * 0.15 <= y <= height * 0.85):
-                continue
-
             r = Camera.imageGetRed(image, width, x, y)
             g = Camera.imageGetGreen(image, width, x, y)
             b = Camera.imageGetBlue(image, width, x, y)
 
+            # Detect black pixels (threshold is quite low for black)
             if r < 10 and g < 10 and b < 10:
-                white_pixels.append((x, y))
+                black_pixels.append((x, y))
 
-    if not white_pixels:
+    if not black_pixels:
         return None
 
-    avg_x = sum(p[0] for p in white_pixels) / len(white_pixels)
-    avg_y = sum(p[1] for p in white_pixels) / len(white_pixels)
+    # Compute the centroid of the black pixels
+    centroid_x = sum(x for x, y in black_pixels) / len(black_pixels)
+    centroid_y = sum(y for x, y in black_pixels) / len(black_pixels)
+    draw_centroid_marker(centroid_x, centroid_y)
+    # Return error from the center of the camera
+    center_x = width / 2
+    center_y = height / 2
 
-    return avg_x / width, avg_y / height
+    # Return the error in x and y from the camera center
+    error_x = centroid_x - center_x
+    error_y = centroid_y - center_y
+
+    return error_x, error_y
 
 def zoek_en_centreer_op_bol():
+    k_p = 0.1
+    max_speed = 0.05
+    tolerance = 0.03
+
+    vx_done = False
+    vy_done = False
+    
     while robot.step(TIME_STEP) != -1:
         kinematic.updateOdometry()
-        pos = detect_white_position()
+        pos = detect_black_position()
+
         if pos is None:
+            print("⚠️ No black spot detected")
             mqtt_client.publish(f"robots/{robot_id}/panic", json.dumps({
                 "robot_id": robot_id,
-                "reason": "No white ball detected",
+                "reason": "No black spot detected",
                 "timestamp": datetime.utcnow().isoformat()
             }))
             break
@@ -105,34 +158,67 @@ def zoek_en_centreer_op_bol():
         avg_x, avg_y = pos
         error_x = avg_x - 0.5
         error_y = avg_y - 0.5
+
         vx = vy = 0.0
 
-        if abs(error_y) > 0.01:
-            vx = -0.1 if error_y > 0 else 0.1
-        if abs(error_x) > 0.01:
-            vy = -0.1 if error_x > 0 else 0.1
+        if not vx_done and abs(error_y) > tolerance:
+            vx = -k_p * error_y
+        else:
+            vx_done = True
 
-        if abs(error_x) <= 0.05 and abs(error_y) <= 0.05:
+        if not vy_done and abs(error_x) > tolerance:
+            vy = -k_p * error_x
+        else:
+            vy_done = True
+
+        vx = max(min(vx, max_speed), -max_speed)
+        vy = max(min(vy, max_speed), -max_speed)
+
+        print(f"Centering step: vx={vx:.2f}, vy={vy:.2f}, error_x={error_x:.2f}, error_y={error_y:.2f}")
+
+        if vx_done and vy_done:
             break
 
         set_wheel_speeds(vx, vy, 0.0, kinematic)
 
-    for i in range(4):
-        wheels[i].setVelocity(0.0)
+    for wheel in wheels:
+        wheel.setVelocity(0.0)
+
+
+
+
+def blijf_gwn_fcking_recht_rijden_stomme_physics(target_heading=goal_heading, k_p=2, max_omega=0.1, tolerance=0.05) -> float:
+    while True:
+        # compass_values = compass.getValues()
+        # current_heading = math.atan2(compass_values[0], compass_values[2])
+        current_heading = inertial_unit.getRollPitchYaw()[2]
+
+        error = ((target_heading - current_heading + math.pi) % (2 * math.pi)) - math.pi
+        omega = k_p * error
+        omega = max(min(omega, max_omega), -max_omega)
+        print(f"[Orientation Correction] Current Heading: {math.degrees(current_heading):.2f}°, Error: {math.degrees(error):.2f}°, Omega: {omega:.3f}")
+
+        if abs(error) < tolerance:
+            set_wheel_speeds(0.0, 0.0, omega, kinematic)
+            break
+        
+        set_wheel_speeds(0.0, 0.0, omega, kinematic)
+        robot.step(TIME_STEP)
+    
+    print("Target heading reached. No more rotation.")
 
 def rijdt(richting_rad, afstand):
     snelheid = 0.2
     vx = snelheid * math.cos(richting_rad)
     vy = snelheid * math.sin(richting_rad)
-    omega = 0.0
 
     pos = kinematic.getPos()
     initial_pos = type(pos)(pos.x, pos.y, pos.theta)
 
-    target_x = initial_pos.x + afstand * math.cos(richting_rad)
-    target_y = initial_pos.y + afstand * math.sin(richting_rad)
+    # target_x = initial_pos.x + afstand * math.cos(richting_rad)
+    # target_y = initial_pos.y + afstand * math.sin(richting_rad)
 
-    tolerance = 0.01
+    tolerance = 0.2
 
     while True:
         if robot.step(TIME_STEP) == -1:
@@ -159,10 +245,13 @@ def rijdt(richting_rad, afstand):
         if distance_travelled >= afstand - tolerance:
             break
 
-        set_wheel_speeds(vx, vy, omega, kinematic)
+        set_wheel_speeds(vx, vy, 0.0, kinematic)
 
     for i in range(4):
         wheels[i].setVelocity(0.0)
+        
+    blijf_gwn_fcking_recht_rijden_stomme_physics()
+
 
 # --- MQTT Client Logica ---
 def on_connect(client, _1, _2, rc):

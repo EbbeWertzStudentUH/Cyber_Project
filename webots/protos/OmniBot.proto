@@ -27,6 +27,9 @@ DEF OMNI_WHEELS_4 Robot {
   children [
     GPS {
     }
+    Compass {
+      name "compass"
+    }
     InertialUnit {
       name IS imu
     }
@@ -953,6 +956,11 @@ DEF OMNI_WHEELS_4 Robot {
       height 640
       projection "spherical"
       name "color_sensor"
+    }
+    Display {
+      name "camera_display"
+      width 640
+      height 640
     }
     Lidar {
       translation 0 0 0.12
