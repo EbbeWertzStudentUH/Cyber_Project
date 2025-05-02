@@ -28,7 +28,8 @@ class QueueManager:
         robots_on_queue_line = [r for r in robots if  isinstance(r.current_element, QueueLine)]
 
         current_occupied = {r.current_element.index: r for r in robots_on_stops}
-        arriving_soon = {r.target_element.index for r in robots_on_queue_line}
+        arriving_soon = {r.target_element.index for r in self.model.robots.values()
+            if isinstance(r.target_element, QueueNode)}
         just_left = {r.previous_element.index for r in robots_on_queue_line
                      if isinstance(r.previous_element, QueueNode)}
 

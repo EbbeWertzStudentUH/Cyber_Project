@@ -41,10 +41,11 @@ class Scheduler:
             if isinstance(task_node, PathNode):
                 if self.reserver.try_reserve(robot.id, task_node.id):
                     self.task_manager.assign_next_task(robot.id, task_node)
-                    continue
-
-                # Reservation failed – try to resolve via dodging
-                self.resolve_conflict(robot, task_node)
+                else:
+                    # Do NOT pop the node. Wait and maybe resolve conflict.
+                    self.resolve_conflict(robot, task_node)
+            else:
+                self.task_manager.assign_next_task(robot.id, task_node)
 
     def resolve_conflict(self, robot: Robot, target_node: PathNode) -> bool:
         blocking_robot_id = self.reserver.get_reserving_robot(target_node.id)

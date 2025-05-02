@@ -22,29 +22,37 @@ class TaskManager:
 
     def get_next_task(self, robot_id: str):
         if robot_id not in self.robot_paths:
-            return
+            return None
 
         path = self.robot_paths[robot_id]
-        next_element = path.pop(0)
         if not path:
             self.robot_paths.pop(robot_id)
-        return next_element
+            return None
+
+        return path[0]  # Return without popping
 
     def assign_next_task(self, robot_id: str, task_element: ModelElement):
         robot = self.model.robots[robot_id]
 
-        if not robot.is_ready: return
+        if not robot.is_ready:
+            return
 
+        # Pickup logic: don't pop, just wait
         if isinstance(robot.current_element, ShelveStop) and not robot.has_product:
             self.commander.command_pickup(robot.id, robot.product_id)
             return
+
+        # Now pop only if actually moving
+        if robot_id in self.robot_paths and self.robot_paths[robot_id]:
+            self.robot_paths[robot_id].pop(0)
+            if not self.robot_paths[robot_id]:
+                self.robot_paths.pop(robot_id)
 
         start_coord = self._node_coordinate(robot.current_element)
         end_coord = self._node_coordinate(task_element)
         center_correct = isinstance(task_element, PathNode)
         self.commander.calculate_and_command_move(robot_id, start_coord, end_coord, center_correct)
         robot.goto_element_from_ready(None, task_element)
-
 
     def _node_coordinate(self, target:ModelElement):
         if isinstance(target, PathNode):
