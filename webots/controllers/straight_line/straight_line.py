@@ -308,6 +308,10 @@ def on_connect(client, _1, _2, rc):
     client.subscribe(f"robots/{robot_id}/move")
     client.subscribe("robots/panic")
 
+def panic_loop():
+    while robot.step(TIME_STEP) != -1:
+        kinematic.updateOdometry()
+
 def on_message(client, userdata, msg):
     payload_json = msg.payload.decode()
     topic = msg.topic
@@ -320,6 +324,10 @@ def on_message(client, userdata, msg):
         task_queue.put(("pickup", None))
     elif topic == f"robots/{robot_id}/drop_off":
         task_queue.put(("drop_off", None))
+    elif topic == "robots/panic":
+        panic_loop()
+
+
 
 
 mqtt_client = mqtt.Client()

@@ -36,6 +36,8 @@ class TaskManager:
 
         if not robot.is_ready:
             return
+        if robot.current_element is None:
+            return
 
         # Pickup logic: don't pop, just wait
         if isinstance(robot.current_element, ShelveStop) and not robot.has_product:

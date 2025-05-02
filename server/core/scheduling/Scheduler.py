@@ -9,122 +9,104 @@ from core.scheduling.TaskManager import TaskManager
 from webbots_api.RobotCommander import RobotCommander
 from webbots_api.command_types import PanicResponse, MoveArriveResponse, PickupResponse, DropOffResponse
 
-
 class Scheduler:
-    def __init__(self, model: WarehouseModel, commander:RobotCommander):
+    def __init__(self, model: WarehouseModel, commander: RobotCommander):
         self.model = model
         self.path_planner = PathPlanner(model)
         self.queue_manager = QueueManager(model, commander)
         self.task_manager = TaskManager(model, self.path_planner, commander)
         self.chain_manager = ChainPathManager(self.model.graph)
         self.reserver = ReservationManager(self.chain_manager)
-        commander.on_panic = self.handle_panic
+
+        commander.on_panic     = self.handle_panic
         commander.on_move_arrive = self.handle_move_arrive
-        commander.on_pickup = self.handle_pickup
-        commander.on_drop_off = self.handle_drop_off
-        commander.on_any = self.update
+        commander.on_pickup    = self.handle_pickup
+        commander.on_drop_off  = self.handle_drop_off
+        commander.on_any       = self.update
 
     def update(self):
         self.queue_manager.update()
-        idle_bots = [r for r in self.model.robots.values() if r.is_ready]
-        if self.model.product_queue:
-            waiting_robots = {r.current_element.index: r for r in idle_bots if isinstance(r.current_element, QueueNode)}
-            if waiting_robots and 0 in waiting_robots:
-                product_id = self.model.pop_product()
-                self.task_manager.assign_fetch_goal(waiting_robots[0], product_id)
+        idle = [r for r in self.model.robots.values() if r.is_ready]
 
-        for robot in idle_bots:
-            task_node = self.task_manager.get_next_task(robot.id)
-            if task_node is None:
+        # assign fetch tasks...
+        if self.model.product_queue:
+            qr = {r.current_element.index:r for r in idle if isinstance(r.current_element, QueueNode)}
+            if qr and 0 in qr:
+                pid = self.model.pop_product()
+                self.task_manager.assign_fetch_goal(qr[0], pid)
+
+        for robot in idle:
+            task = self.task_manager.get_next_task(robot.id)
+            if task is None:
                 continue
 
-            if isinstance(task_node, PathNode):
-                if self.reserver.try_reserve(robot.id, task_node.id):
-                    self.task_manager.assign_next_task(robot.id, task_node)
+            # path nodes need reservation
+            if isinstance(task, PathNode):
+                if self.reserver.try_reserve(robot.id, task.id):
+                    self.task_manager.assign_next_task(robot.id, task)
                 else:
-                    # Do NOT pop the node. Wait and maybe resolve conflict.
-                    self.resolve_conflict(robot, task_node)
+                    # conflict → push resolution
+                    self._attempt_push(robot, task)
             else:
-                self.task_manager.assign_next_task(robot.id, task_node)
+                # queue or pickup/dropoff
+                self.task_manager.assign_next_task(robot.id, task)
 
-    def resolve_conflict(self, robot: Robot, target_node: PathNode) -> bool:
-        blocking_robot_id = self.reserver.get_reserving_robot(target_node.id)
-        if not blocking_robot_id or blocking_robot_id == robot.id:
-            return False
+    def _attempt_push(self, robot: Robot, target: PathNode):
+        blocker_id = self.reserver.get_reserving_robot(target.id)
+        if not blocker_id or blocker_id == robot.id:
+            return
+        blocker = self.model.robots[blocker_id]
 
-        blocking_robot = self.model.robots[blocking_robot_id]
+        # must be actually sitting on that node
+        if not (isinstance(blocker.current_element, PathNode)
+                and blocker.current_element.id == target.id):
+            return
 
-        # Node must be *currently* occupied to trigger dodge
-        if not (isinstance(blocking_robot.current_element, PathNode) and
-                blocking_robot.current_element.id == target_node.id):
-            return False
+        # decide pusher vs passer
+        r_chain = self.chain_manager.get_chain_id(robot.current_element.id)
+        b_chain = self.chain_manager.get_chain_id(blocker.current_element.id)
+        if   r_chain!=-1 and b_chain==-1:  pusher, passer = blocker, robot
+        elif b_chain!=-1 and r_chain==-1:  pusher, passer = robot, blocker
+        elif robot.has_product and not blocker.has_product:  pusher, passer = blocker, robot
+        elif blocker.has_product and not robot.has_product:  pusher, passer = robot, blocker
+        elif robot.id > blocker.id:       pusher, passer = robot, blocker
+        else:                              pusher, passer = blocker, robot
 
-        # Determine priority
-        robot_chain = self.chain_manager.get_chain_id(robot.current_element.id)
-        blocking_chain = self.chain_manager.get_chain_id(blocking_robot.current_element.id)
+        # find a push-aside node for the pusher
+        curr = pusher.current_element.id
+        neigh = self.model.graph.get_neighbors(curr)
+        forbidden = {curr, target.id}
+        if isinstance(passer.target_element, PathNode):
+            forbidden.add(passer.target_element.id)
 
-        dodge_robot = None
-        passing_robot = None
+        options = [n for n in neigh if n not in forbidden]
+        if not options:
+            return
 
-        if robot_chain != -1 and blocking_chain == -1:
-            dodge_robot, passing_robot = blocking_robot, robot
-        elif blocking_chain != -1 and robot_chain == -1:
-            dodge_robot, passing_robot = robot, blocking_robot
-        elif robot.has_product and not blocking_robot.has_product:
-            dodge_robot, passing_robot = blocking_robot, robot
-        elif blocking_robot.has_product and not robot.has_product:
-            dodge_robot, passing_robot = robot, blocking_robot
-        elif robot.id > blocking_robot.id:
-            dodge_robot, passing_robot = robot, blocking_robot
-        else:
-            dodge_robot, passing_robot = blocking_robot, robot
+        # pick one and move
+        push_to = min(options)
+        if self.reserver.try_reserve(pusher.id, push_to):
+            self.task_manager.assign_next_task(pusher.id,
+                                               self.model.graph.nodes[push_to])
+            print(f"🤖 PUSH: Robot {pusher.id} steps to {push_to} to free {passer.id}")
+            # release old reservation so passer can grab it next tick
+            self.reserver.release_chain_or_node(pusher.id, curr)
 
-        # Don't dodge again if already dodging
-        if (isinstance(dodge_robot.target_element, PathNode) and
-                self.chain_manager.get_chain_id(dodge_robot.target_element.id) == -1 and
-                self.chain_manager.get_chain_id(dodge_robot.current_element.id) == -1):
-            return False
+    def handle_move_arrive(self, resp: MoveArriveResponse):
+        bot = self.model.robots[resp.robot_id]
+        prev = bot.previous_element
+        bot.target_arrive()
+        # free old spot
+        if isinstance(prev, PathNode):
+            self.reserver.release_chain_or_node(bot.id, prev.id)
 
-        # Find a safe junction neighbor to dodge into
-        junction = target_node
-        neighbors = self.model.graph.get_neighbors(junction.id)
-        used = {robot.current_element.id, target_node.id}
-        if isinstance(passing_robot.target_element, PathNode):
-            used.add(passing_robot.target_element.id)
+    def handle_pickup(self, p: PickupResponse):
+        r = self.model.robots[p.robot_id]
+        r.is_ready=True; r.has_product=True
 
-        safe_dodge_ids = [n for n in neighbors if n not in used]
-        if not safe_dodge_ids:
-            return False
+    def handle_drop_off(self, d: DropOffResponse):
+        r = self.model.robots[d.robot_id]
+        r.is_ready=True; r.has_product=False
 
-        dodge_target_id = min(safe_dodge_ids)
-        dodge_target = self.model.graph.nodes[dodge_target_id]
-
-        if self.reserver.try_reserve(dodge_robot.id, dodge_target_id):
-            self.task_manager.assign_next_task(dodge_robot.id, dodge_target)
-            # Re-insert the conflict node back into task queue (so robot will go to it after dodge)
-            self.task_manager.prepend_task(dodge_robot.id, target_node)
-            print(f"🤖 Robot {dodge_robot.id} dodges to node {dodge_target_id} to let {passing_robot.id} pass.")
-            return True
-
-        return False
-
-    @staticmethod
-    def handle_panic(panic: PanicResponse):
-        print(f"⚠️panic: {panic}")
-
-    def handle_move_arrive(self, arrive: MoveArriveResponse):
-        robot = self.model.robots[arrive.robot_id]
-        to_release_node = robot.previous_element
-        robot.target_arrive()
-        if isinstance(to_release_node, PathNode):
-            self.reserver.release_chain_or_node(robot.id, to_release_node.id)
-
-    def handle_pickup(self, pickup: PickupResponse):
-        robot = self.model.robots[pickup.robot_id]
-        robot.is_ready = True
-        robot.has_product = True
-
-    def handle_drop_off(self, drop_off:DropOffResponse):
-        robot = self.model.robots[drop_off.robot_id]
-        robot.is_ready = True
-        robot.has_product = False
+    def handle_panic(self, panic: PanicResponse):
+        print("⚠️ Panic:", panic)
