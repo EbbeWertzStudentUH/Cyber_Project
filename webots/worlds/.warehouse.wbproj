@@ -5,13 +5,13 @@ sceneTreePerspectives: 000000ff000000010000000300000022000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 projectionMode: ORTHOGRAPHIC
-orthographicViewHeight: 12.2644
+orthographicViewHeight: 14.8399
 textFiles: 0 "protos/OmniBot.proto"
 globalOptionalRendering: LidarPointClouds
 consoles: Console:All:All
-renderingDevicePerspectives: A:camera_display;0;0.585938;0;0
+renderingDevicePerspectives: A:camera_display;1;0.914063;0.166329;0.0816
 renderingDevicePerspectives: A:color_sensor;0;0.585938;0;0
 renderingDevicePerspectives: B:camera_display;0;0.585938;0;0
 renderingDevicePerspectives: B:color_sensor;0;0.585938;0;0
-renderingDevicePerspectives: C:camera_display;0;0.585938;0;0
+renderingDevicePerspectives: C:camera_display;0;2.34375;0.196755;0.1696
 renderingDevicePerspectives: C:color_sensor;0;0.585938;0.015213;0.1648
