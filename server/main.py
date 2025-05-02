@@ -27,6 +27,8 @@ async def upload_svg(file: UploadFile = File(...)):
     for node in CORE_SINGLETON.model.queue_line.queue_nodes:
         x, y = node.coordinate(CORE_SINGLETON.model.queue_line)
         print(f"{x-10} {10-y}")
+
+    # print(f"edges: {[e for e in CORE_SINGLETON.model.graph.edges]}")
     return {"message": "SVG uploaded and processed successfully"}
 
 @app.get("/api/queu_lengt")
@@ -101,4 +103,4 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True, log_level="warning")

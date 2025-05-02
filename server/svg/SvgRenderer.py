@@ -31,6 +31,7 @@ class SvgRenderer:
             for path_node in self.model.graph.nodes.values():
                 if path_node.id in self.reserved_node_ids:
                     self.create_circle(path_node.x, path_node.y, 'cyan', self.root)
+                self.create_text(str(path_node.x), str(path_node.y), str(path_node.id), self.root)
         return ET.tostring(self.root, encoding="utf-8", xml_declaration=True).decode('utf-8')
 
     def draw_robot(self, robot: Robot):
@@ -84,3 +85,15 @@ class SvgRenderer:
             'style': f"fill:{color}; stroke:black; stroke-width:0.1"
         }
         ET.SubElement(root, 'circle', circle_attrib)
+
+    @staticmethod
+    def create_text(x, y, text, root):
+        text_element = ET.SubElement(root, 'text', attrib={
+            'x': x,
+            'y': y,
+            'fill': 'white',
+            'font-size': '0.2',
+            'text-anchor': 'middle',
+            'dominant-baseline': 'middle',
+        })
+        text_element.text = text

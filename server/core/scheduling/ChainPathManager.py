@@ -11,6 +11,9 @@ class ChainPathManager:
         self.chains = dict[int, set[int]]() # chain id -> node ids
         self._build_nx_graph()
         self._identify_chains()
+        print("chains: ")
+        for cid, c in self.chains.items():
+            print(f"{cid}: {[f"{nid}d{self.nx_graph.degree[nid]}" for nid in c]}")
 
     def _build_nx_graph(self):
         for node_id in self.graph.nodes:
@@ -19,37 +22,25 @@ class ChainPathManager:
             self.nx_graph.add_edge(n1, n2)
 
     def _identify_chains(self):
-        visited = set()
-        chain_id = 0
+        # Step 1: Get nodes with degree <= 2 (potential chain nodes)
+        chain_nodes = {n for n in self.nx_graph.nodes if self.nx_graph.degree[n] <= 2}
 
-        for node_id in self.nx_graph.nodes:
-            if node_id in visited or self.nx_graph.degree[node_id] > 2:
-                continue
+        # Step 2: Build subgraph from just those nodes and their edges
+        subgraph = self.nx_graph.subgraph(chain_nodes)
 
-            path = []
-            current = node_id
-            prev = None
+        # Step 3: Get connected components (these are your chains)
+        for chain_id, component in enumerate(nx.connected_components(subgraph)):
+            full_chain_nodes = set(component)
 
-            while True:
-                visited.add(current)
-                path.append(current)
-                neighbors = [n for n in self.nx_graph.neighbors(current) if n != prev]
+            # Step 4: Include any junctions directly connected to the component
+            for node in component:
+                for neighbor in self.nx_graph.neighbors(node):
+                    if self.nx_graph.degree[neighbor] > 2:
+                        full_chain_nodes.add(neighbor)
 
-                if len(neighbors) != 1:
-                    break
-
-                next_node = neighbors[0]
-                if self.nx_graph.degree[next_node] > 2:
-                    visited.add(next_node)
-                    path.append(next_node)
-                    break
-
-                prev, current = current, next_node
-
-            for n in path:
-                self.node_to_chain[n] = chain_id
-                self.chains[chain_id].add(n)
-            chain_id += 1
+            self.chains[chain_id] = full_chain_nodes
+            for node_id in full_chain_nodes:
+                self.node_to_chain[node_id] = chain_id
 
     def get_chain_id(self, node_id: int):
         return self.node_to_chain.get(node_id, -1)
